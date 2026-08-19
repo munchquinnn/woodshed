@@ -21,18 +21,18 @@
   html{-webkit-text-size-adjust:100%}
   button,select,input,circle.gt,.track,.pill,[role=tab]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   body{margin:0;padding:14px 14px 40px;background:var(--tolex);color:var(--cream);
-    font-family:var(--mono);font-size:13px;-webkit-text-size-adjust:100%;
+    font-family:var(--mono);font-size:15px;-webkit-text-size-adjust:100%;
     background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
     background-size:7px 7px;}
   .wrap{max-width:1180px;margin:0 auto}
-  .eyebrow{font-family:var(--disp);text-transform:uppercase;letter-spacing:.28em;font-size:11px;color:var(--dim)}
+  .eyebrow{font-family:var(--disp);text-transform:uppercase;letter-spacing:.28em;font-size:13px;color:var(--dim)}
   h1{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-     font-size:32px;line-height:.95;margin:2px 0 12px}
+     font-size:38px;line-height:.95;margin:2px 0 14px}
   h1 em{font-style:normal;color:var(--root)}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px;margin-bottom:12px;
          box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-  .lbl{font-family:var(--disp);text-transform:uppercase;letter-spacing:.2em;font-size:11px;color:var(--dim);
-       display:block;margin:0 0 6px}
+  .lbl{font-family:var(--disp);text-transform:uppercase;letter-spacing:.2em;font-size:13px;color:var(--dim);
+       display:block;margin:0 0 7px}
   .rowscroll{display:flex;gap:6px;flex-wrap:wrap}
   button.pill{background:var(--panel-2);color:var(--cream);border:1px solid var(--line);
     border-radius:3px;padding:11px 14px;font-family:var(--mono);font-size:15px;cursor:pointer;
@@ -60,22 +60,22 @@
   .board-wrap::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
   svg{display:block;margin:0 auto}
   .brief h2{font-family:var(--disp);text-transform:uppercase;letter-spacing:.06em;font-weight:700;
-    font-size:26px;line-height:1;margin:2px 0 8px}
+    font-size:30px;line-height:1;margin:2px 0 10px}
   .brief h2 span{color:var(--root)}
-  .brief p{margin:10px 0 0;line-height:1.55;color:#cfd6dc;font-size:12.5px;max-width:62ch}
+  .brief p{margin:12px 0 0;line-height:1.6;color:#cfd6dc;font-size:15.5px;max-width:none}
   .formula{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
   .deg{border:1px solid var(--line);background:var(--panel-2);border-radius:3px;padding:5px 8px;
     display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px}
-  .deg .d{font-family:var(--disp);letter-spacing:.1em;font-size:11px;color:var(--dim)}
-  .deg .n{font-size:14px;font-weight:600}
+  .deg .d{font-family:var(--disp);letter-spacing:.1em;font-size:13px;color:var(--dim)}
+  .deg .n{font-size:17px;font-weight:600}
   .deg.is-root{border-color:var(--root)}
   .deg.is-root .n{color:var(--root)}
   .deg.is-alt .d{color:var(--tone)}
   .grips{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
   .grip{flex:0 0 auto;text-align:center}
-  .grip .gname{font-family:var(--disp);text-transform:uppercase;letter-spacing:.16em;font-size:12px;
-    color:var(--dim);margin-bottom:6px}
-  .grip .gnotes{font-size:11px;color:var(--dim);margin-top:6px}
+  .grip .gname{font-family:var(--disp);text-transform:uppercase;letter-spacing:.16em;font-size:14px;
+    color:var(--dim);margin-bottom:8px}
+  .grip .gnotes{font-size:13px;color:var(--dim);margin-top:8px}
   .readout{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
   .bpm{font-family:var(--disp);font-weight:700;font-size:58px;line-height:.85}
   .bpm-unit{font-family:var(--disp);text-transform:uppercase;letter-spacing:.24em;font-size:11px;color:var(--dim)}
@@ -94,14 +94,14 @@
     color:var(--cream);font-family:var(--disp);text-transform:uppercase;letter-spacing:.2em;font-size:15px;cursor:pointer}
   .transport button.go{background:var(--tone);border-color:var(--tone);color:#08201b;font-weight:700}
   .transport button.go[data-running="true"]{background:var(--root);border-color:var(--root);color:#150d0a}
-  .meta{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;font-size:12px;color:var(--dim);
+  .meta{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;font-size:14px;color:var(--dim);
     margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
   .meta b{color:var(--cream);font-weight:500}
   .status{font-family:var(--disp);text-transform:uppercase;letter-spacing:.2em;font-size:15px;color:var(--tone);
     min-height:20px;margin-bottom:6px}
   .status.rest{color:var(--dim)}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
-  .chips .ch{border:1px solid var(--line);background:var(--panel-2);border-radius:3px;padding:6px 9px;font-size:13px}
+  .chips .ch{border:1px solid var(--line);background:var(--panel-2);border-radius:3px;padding:8px 11px;font-size:15px}
   .chips .ch.ok{border-color:var(--tone);color:var(--tone)}
   .chips .ch.no{border-color:var(--root);color:var(--root)}
   .chips .empty{color:var(--dim);font-size:12px;padding:6px 0}
@@ -113,10 +113,10 @@
   circle.gt{cursor:pointer}
   .ex{border-top:1px solid var(--line);padding:12px 0}
   .ex:first-child{border-top:none}
-  .ex h4{font-family:var(--disp);text-transform:uppercase;letter-spacing:.14em;font-size:15px;margin:0 0 4px}
-  .ex p{margin:0 0 8px;color:var(--dim);font-size:12px;line-height:1.5;max-width:64ch}
+  .ex h4{font-family:var(--disp);text-transform:uppercase;letter-spacing:.14em;font-size:18px;margin:0 0 6px}
+  .ex p{margin:0 0 10px;color:var(--dim);font-size:14.5px;line-height:1.6;max-width:none}
   .ex .seq{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-  .ex .seq span{border:1px solid var(--line);background:var(--panel-2);border-radius:3px;padding:5px 8px;font-size:12px}
+  .ex .seq span{border:1px solid var(--line);background:var(--panel-2);border-radius:3px;padding:7px 10px;font-size:14px}
   .ex .seq span b{color:var(--tone);font-weight:600}
   .ex button{background:var(--panel-2);color:var(--cream);border:1px solid var(--line);border-radius:3px;
     padding:13px 18px;min-height:46px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.16em;font-size:13px;cursor:pointer}
@@ -130,27 +130,27 @@
   .tracks{display:grid;gap:10px;grid-template-columns:1fr}
   @media(min-width:700px){.tracks{grid-template-columns:1fr 1fr}}
   .track{text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
-    padding:14px;cursor:pointer;color:var(--cream);font-family:var(--mono);font-size:12.5px;line-height:1.5}
+    padding:14px;cursor:pointer;color:var(--cream);font-family:var(--mono);font-size:14.5px;line-height:1.6}
   .track[aria-pressed="true"]{border-color:var(--root);box-shadow:inset 0 0 0 1px var(--root)}
   .track h3{font-family:var(--disp);text-transform:uppercase;letter-spacing:.16em;font-size:17px;
     margin:0 0 4px;font-weight:700}
   .track[aria-pressed="true"] h3{color:var(--root)}
-  .track .lvl{color:var(--dim);font-size:11px;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase}
+  .track .lvl{color:var(--dim);font-size:13px;font-family:var(--disp);letter-spacing:.2em;text-transform:uppercase}
   .session h3{font-family:var(--disp);text-transform:uppercase;letter-spacing:.06em;font-size:24px;margin:2px 0 4px}
-  .session .focus{color:#cfd6dc;line-height:1.55;margin:8px 0 14px;max-width:64ch}
+  .session .focus{color:#cfd6dc;line-height:1.6;font-size:15.5px;margin:10px 0 16px;max-width:none}
   .steps{list-style:none;padding:0;margin:0}
-  .steps li{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);line-height:1.5}
-  .steps li .mins{font-family:var(--disp);letter-spacing:.12em;font-size:12px;color:var(--tone);
+  .steps li{display:flex;gap:12px;padding:13px 0;border-top:1px solid var(--line);line-height:1.6;font-size:15px}
+  .steps li .mins{font-family:var(--disp);letter-spacing:.12em;font-size:14px;color:var(--tone);
     flex:0 0 46px;padding-top:2px}
   .steps li .what b{font-weight:600;display:block;margin-bottom:2px}
-  .steps li .what span{color:var(--dim);font-size:12px}
+  .steps li .what span{color:var(--dim);font-size:14px}
   .steps li.revisit .mins{color:var(--dim)}
   .ladder{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
   .rung{width:26px;height:6px;border-radius:3px;background:var(--panel-2);border:1px solid var(--line)}
   .rung.done{background:var(--tone);border-color:var(--tone)}
   .rung.now{background:var(--root);border-color:var(--root)}
-  .note{color:var(--dim);font-size:12px;line-height:1.5;margin:10px 2px 0}
-  details summary{font-family:var(--disp);text-transform:uppercase;letter-spacing:.2em;font-size:11px;
+  .note{color:var(--dim);font-size:14px;line-height:1.6;margin:12px 2px 0}
+  details summary{font-family:var(--disp);text-transform:uppercase;letter-spacing:.2em;font-size:13px;
     color:var(--dim);cursor:pointer;margin-bottom:10px}
   @media(min-width:880px){
     .top{display:grid;grid-template-columns:330px 1fr;gap:12px;align-items:start}
@@ -164,6 +164,10 @@
 <div class="wrap">
   <div class="eyebrow">E A D G</div>
   <h1>Wood<em>shed</em></h1>
+  <button id="sndBtn" style="display:none;width:100%;margin:0 0 14px;padding:16px;border-radius:4px;
+    border:1px solid var(--root);background:rgba(240,98,60,.14);color:var(--cream);
+    font-family:var(--disp);text-transform:uppercase;letter-spacing:.2em;font-size:17px;cursor:pointer">
+    Sound is off &mdash; tap to turn it on</button>
 
   <div class="panel">
     <span class="lbl">Root</span>
@@ -640,7 +644,7 @@ function neckSvg(F,fw,drawNote){
   s+='<rect x="'+(nutX-5)+'" y="'+(yOf(0)-18)+'" width="5" height="'+(3*gap+36)+'" fill="#ded6c4"/>';
   OPEN.forEach((st,i)=>{s+='<line x1="0" y1="'+yOf(i)+'" x2="'+W+'" y2="'+yOf(i)+'" stroke="var(--string)" stroke-width="'+st.w+'" opacity=".8"/>';});
   for(let f=1;f<=F;f++){const cx=nutX+(f-.5)*fw;
-    s+='<text x="'+cx+'" y="'+(yOf(3)+42)+'" text-anchor="middle" fill="var(--dim)" font-family="var(--mono)" font-size="10">'+f+'</text>';}
+    s+='<text x="'+cx+'" y="'+(yOf(3)+42)+'" text-anchor="middle" fill="var(--dim)" font-family="var(--mono)" font-size="12">'+f+'</text>';}
   for(let row=0;row<4;row++)for(let f=0;f<=F;f++){
     const cx=f===0?15:nutX+(f-.5)*fw,cy=yOf(row);
     s+=drawNote(row,f,cx,cy);}
@@ -969,14 +973,36 @@ async function keepAwake(on){
   }catch(e){/* not supported, or denied */}
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&running)keepAwake(true);});
+/* iOS only counts a real tap as a user gesture \u2014 a scroll does not \u2014 and a context
+   created outside one stays suspended. So: retry on every tap until it runs, and prime
+   it with a silent buffer, which is what actually wakes iOS audio. */
+function audioReady(){return !!ctx&&ctx.state==='running';}
 function unlockAudio(){
-  if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();
-  if(ctx.state==='suspended')ctx.resume();
+  try{
+    if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state!=='running'&&ctx.resume)ctx.resume();
+    const b=ctx.createBuffer(1,1,22050),src=ctx.createBufferSource();
+    src.buffer=b;src.connect(ctx.destination);src.start(0);
+  }catch(e){}
+  audioBadge();
+  return audioReady();
 }
-document.addEventListener('touchend',unlockAudio,{once:true});
-document.addEventListener('mousedown',unlockAudio,{once:true});
+function audioBadge(){
+  const el=document.getElementById('sndBtn');
+  if(el)el.style.display=audioReady()?'none':'';
+}
+['touchend','pointerup','mousedown','keydown'].forEach(ev=>
+  document.addEventListener(ev,()=>{if(!audioReady())unlockAudio();},true));
+setInterval(audioBadge,1000);
+function withAudio(fn){
+  unlockAudio();
+  if(audioReady())return fn();
+  if(ctx&&ctx.resume)ctx.resume().then(fn).catch(fn); else fn();
+}
 function start(){
-  unlockAudio();keepAwake(true);
+  keepAwake(true);withAudio(beginClock);
+}
+function beginClock(){
   running=true;tick=0;queue=[];nextTime=ctx.currentTime+.15;
   ciLeft=beatsPerBarNow()*(+$('countIn').value||0);
   phase=ciLeft>0?'countin':'play';
@@ -1051,7 +1077,7 @@ function pluck(midi,t,seconds){
 }
 function playLick(rate){
   if(!GLICK.length)return;
-  unlockAudio();
+  if(!audioReady()){withAudio(()=>playLick(rate));return;}
   const eighth=30/((+$('gTempo').value||80)*(rate||1));
   let t=ctx.currentTime+.12;
   GLICK.forEach(p=>{pluck(midiOf(p),t,eighth*p.dur);t+=eighth*p.dur;});
@@ -1177,7 +1203,7 @@ function renderHarmEx(){
   document.querySelectorAll('[data-hex]').forEach(b=>b.onclick=()=>playHarmEx(+b.dataset.hex));
 }
 function playHarmEx(i){
-  unlockAudio();
+  if(!audioReady()){withAudio(()=>playHarmEx(i));return;}
   let t=ctx.currentTime+.1;
   HARM_EX[i].seq.forEach(([st,fr])=>{
     const f=440*Math.pow(2,(harmMidi(st,fr)-69)/12);
@@ -1403,7 +1429,7 @@ const PLAN={
           [4,'Fourths and sixths','Same idea, wider intervals. Keep the note values dead even.'],
           [7,'Walk a chorus','Walking bass mode, blues in F, quarter notes, no stopping for twelve bars.']]}]}};
 
-const WOODSHED_VERSION='1.0 \u00b7 18 Aug 2026';
+const WOODSHED_VERSION='1.1 \u00b7 18 Aug 2026';
 let planState={left:0,right:0,track:'left',done:{left:0,right:0},log:[]};
 /* Storage: the artifact host's store when running inside Claude, the browser's own
    store when the page is served from a URL, memory as a last resort. */
@@ -1513,5 +1539,6 @@ function applySetup(cfg){
 }
 planLoad();
 
+document.getElementById('sndBtn').onclick=unlockAudio;audioBadge();
 syncToggles();syncRamp();drawBeats();render();renderGrips();buildRun();renderHarm();refreshMeta();
 </script>
