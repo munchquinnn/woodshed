@@ -54,6 +54,18 @@
   .view{display:none}.view.on{display:block}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .toggles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .grid16{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;margin:14px 0 12px;min-width:520px}
+  .cell{border:1px solid var(--line);background:var(--panel-2);border-radius:4px;padding:12px 0;
+    text-align:center;font-family:var(--disp);font-size:19px;letter-spacing:.04em;color:var(--cream)}
+  .cell.beat{border-color:#55636f}
+  .cell.rest{color:#5b6570}
+  .cell.on{background:var(--tone);border-color:var(--tone);color:#08201b;font-weight:700}
+  .cell.on.downbeat{background:var(--root);border-color:var(--root);color:#150d0a}
+  .gridwrap{overflow-x:auto}
+  .boardbox{background:var(--panel);border:1px solid var(--line);border-radius:4px;margin-bottom:12px}
+  .boardbox .board-wrap{border:none;background:none;margin:0;padding-top:0}
+  .boardbar{display:flex;justify-content:flex-end;padding:10px 12px 0}
+  .boardbar .pill{min-height:38px;padding:8px 14px;font-size:14px}
   .board-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;background:var(--panel);border:1px solid var(--line);
     border-radius:4px;padding:8px 0;margin-bottom:12px}
   .board-wrap::-webkit-scrollbar{height:5px}
@@ -71,11 +83,15 @@
   .deg.is-root{border-color:var(--root)}
   .deg.is-root .n{color:var(--root)}
   .deg.is-alt .d{color:var(--tone)}
-  .grips{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+  .grips{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;align-items:flex-start}
   .grip{flex:0 0 auto;text-align:center}
   .grip .gname{font-family:var(--disp);text-transform:uppercase;letter-spacing:.16em;font-size:14px;
     color:var(--dim);margin-bottom:8px}
-  .grip{min-width:132px}
+  .grip{min-width:136px;background:none;border:1px solid transparent;border-radius:6px;padding:6px;
+    cursor:pointer;font-family:inherit;color:inherit;text-align:center;display:block}
+  .grip:hover,.grip:active{border-color:var(--tone)}
+  .hearline{margin-top:8px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.16em;
+    font-size:12px;color:var(--tone)}
   .grip .gnotes{display:flex;flex-direction:column;gap:3px;margin-top:10px;align-items:stretch}
   .grip .nrow{display:flex;justify-content:space-between;gap:10px;padding:5px 9px;border-radius:3px;
     background:var(--panel-2);border:1px solid var(--line);font-size:14px;line-height:1.2}
@@ -216,16 +232,16 @@
   </div>
 
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-scales" aria-selected="true">Scales</button>
+    <button role="tab" id="tab-plan" aria-selected="true">Plan</button>
+    <button role="tab" id="tab-scales" aria-selected="false">Scales</button>
     <button role="tab" id="tab-chords" aria-selected="false">Chords</button>
+    <button role="tab" id="tab-harm" aria-selected="false">Harmonics</button>
     <button role="tab" id="tab-practice" aria-selected="false">Practice</button>
     <button role="tab" id="tab-game" aria-selected="false">Ear</button>
-    <button role="tab" id="tab-harm" aria-selected="false">Harmonics</button>
-    <button role="tab" id="tab-plan" aria-selected="false">Plan</button>
   </div>
 
   <!-- SCALES -->
-  <section class="view on" id="view-scales">
+  <section class="view" id="view-scales">
     <div class="top">
       <div class="panel">
         <span class="lbl">Shape</span>
@@ -247,7 +263,7 @@
     </div>
     <div class="board-wrap"><div id="board"></div></div>
     <div class="panel">
-      <span class="lbl">Patterns \u2014 tap to see and hear</span>
+      <span class="lbl">Patterns — tap to see and hear</span>
       <div id="patterns"></div>
     </div>
   </section>
@@ -257,11 +273,11 @@
     <div class="panel">
       <span class="lbl">Chord system</span>
       <div class="toggles" style="margin-top:0">
-        <button class="pill" data-form="chart" aria-pressed="true">Open position</button>
-        <button class="pill" data-form="moveE" aria-pressed="false">Movable &mdash; root on E</button>
-        <button class="pill" data-form="moveA" aria-pressed="false">Movable &mdash; root on A</button>
-        <button class="pill" data-form="close3" aria-pressed="false">Three-note close</button>
-        <button class="pill" data-form="open3" aria-pressed="false">Three-note open</button>
+        <button class="pill" data-form="open3" aria-pressed="true">Three-note, spread</button>
+        <button class="pill" data-form="close3" aria-pressed="false">Three-note, close</button>
+        <button class="pill" data-form="moveE" aria-pressed="false">Four-note &mdash; root on E</button>
+        <button class="pill" data-form="moveA" aria-pressed="false">Four-note &mdash; root on A</button>
+        <button class="pill" data-form="chart" aria-pressed="false">Open position</button>
       </div>
       <p class="note" id="chordNote"></p>
     </div>
@@ -280,13 +296,15 @@
         <button class="pill" data-mode="walk" aria-pressed="false">Walking bass</button>
         <button class="pill" data-mode="chords" aria-pressed="false">Chord changes</button>
         <button class="pill" data-mode="triads" aria-pressed="false">Triads</button>
-      </div>
-      <div class="toggles" style="margin-top:10px">
-        <button class="pill" id="pLabelBtn" aria-pressed="false">Showing: degrees</button>
+        <button class="pill" data-mode="tap" aria-pressed="false">Tapping</button>
       </div>
       <div id="walkPick" style="margin-top:12px;max-width:340px;display:none">
         <span class="lbl">Progression</span>
         <select id="walkProg"></select>
+      </div>
+      <div id="tapPick" style="margin-top:12px;max-width:440px;display:none">
+        <span class="lbl">Pattern</span>
+        <select id="tapPat"></select>
       </div>
       <div id="triadPick" style="margin-top:12px;display:none">
         <div class="grid2">
@@ -303,9 +321,9 @@
             </select></div>
           <div><span class="lbl">Beats per shape</span>
             <select id="triadBeats">
-              <option value="3" selected>3 \u2014 one per note</option>
+              <option value="3" selected>3 — one per note</option>
               <option value="4">4</option>
-              <option value="6">6 \u2014 up and back down</option>
+              <option value="6">6 — up and back down</option>
             </select></div>
           <div><span class="lbl">Bars per shape</span>
             <select id="triadBars"><option value="1" selected>1 bar</option><option value="2">2 bars</option></select></div>
@@ -329,8 +347,9 @@
             <span class="lbl">Change key each pass</span>
             <select id="rootCycle">
               <option value="off" selected>Stay in one key</option>
-              <option value="semitone">Chromatic \u2014 up a semitone</option>
-              <option value="fourths">Circle of fourths</option>
+              <option value="semitone">Chromatic — up a semitone</option>
+              <option value="fourths">Circle of fourths \u2014 down a fourth</option>
+              <option value="fifths">Circle of fifths \u2014 up a fifth</option>
             </select>
           </div>
           <div id="cycleWhere"><span class="lbl">Key now</span>
@@ -349,6 +368,16 @@
 
     <div id="runBoardWrap" class="board-wrap"><div id="runBoard"></div></div>
 
+    <div id="tapPanel" style="display:none">
+      <div class="panel">
+        <div class="chordnow"><div class="big" id="tapName">&mdash;</div></div>
+        <p class="note" id="tapHow" style="margin-top:0"></p>
+        <div class="btnrow"><button id="tapHear">Hear it</button></div>
+        <div class="legend" id="tapKey"></div>
+      </div>
+      <div class="boardbox"><div class="board-wrap"><div id="tapBoard"></div></div></div>
+    </div>
+
     <div id="triadPanel" style="display:none">
       <div class="panel">
         <div class="chordnow">
@@ -358,7 +387,10 @@
         <div class="bars" id="tBars"></div>
         <div class="btnrow"><button id="tRestart">Restart from shape 1</button></div>
       </div>
-      <div class="board-wrap"><div id="triadBoard"></div></div>
+      <div class="boardbox">
+        <div class="boardbar"><button class="pill" data-plabel>degrees</button></div>
+        <div class="board-wrap"><div id="triadBoard"></div></div>
+      </div>
       <div class="panel"><p class="note" id="tHow"></p></div>
     </div>
 
@@ -384,7 +416,10 @@
         <div class="bars" id="walkBars"></div>
         <div class="btnrow"><button id="walkRestart">Restart from bar 1</button></div>
       </div>
-      <div class="board-wrap"><div id="walkBoard"></div></div>
+      <div class="boardbox">
+        <div class="boardbar"><button class="pill" data-plabel>degrees</button></div>
+        <div class="board-wrap"><div id="walkBoard"></div></div>
+      </div>
       <div class="panel">
         <span class="lbl">How to walk it</span>
         <p class="note" id="walkHow"></p>
@@ -470,9 +505,9 @@
       <span class="lbl">Drill</span>
       <div class="toggles" style="margin-top:0">
         <button class="pill" data-drill="pitch" aria-pressed="true">Note</button>
-        <button class="pill" data-drill="ivl" aria-pressed="false">Interval</button>
-        <button class="pill" data-drill="ear" aria-pressed="false">Lick</button>
-        <button class="pill" data-drill="notes" aria-pressed="false">Find it</button>
+        <button class="pill" data-drill="ivl" aria-pressed="false">Intervals</button>
+        <button class="pill" data-drill="ear" aria-pressed="false">Echo</button>
+        <button class="pill" data-drill="notes" aria-pressed="false">Fretboard</button>
       </div>
     </div>
 
@@ -489,7 +524,7 @@
           <span>Streak <b id="pStreak">0</b></span>
           <span>Correct <b id="pScore">0</b> of <b id="pTries">0</b></span>
         </div>
-        <p class="note">One octave, C up to B, same register every time. The reference note gives you an anchor \u2014 switch it off once you can name them cold.</p>
+        <p class="note">One octave, C up to B, same register every time. The reference note gives you an anchor — switch it off once you can name them cold.</p>
       </div>
     </div>
 
@@ -498,7 +533,7 @@
         <div class="grid2" style="max-width:640px">
           <div><span class="lbl">Which intervals</span>
             <select id="iSet">
-              <option value="common" selected>Common \u2014 3rds, 4th, 5th, octave</option>
+              <option value="common" selected>Common — 3rds, 4th, 5th, octave</option>
               <option value="all">All twelve</option>
             </select></div>
           <div><span class="lbl">Direction</span>
@@ -527,6 +562,10 @@
     <div id="notesDrill" style="display:none">
       <div class="panel">
         <span class="lbl">Circle of fourths</span>
+        <select id="nfOrder" style="max-width:340px;margin-bottom:10px">
+          <option value="fourths" selected>Circle of fourths</option>
+          <option value="fifths">Circle of fifths</option>
+        </select>
         <select id="nfSet" style="max-width:340px">
           <option value="all">All twelve, in order</option>
           <option value="0">Set 1 &mdash; C, F, B&#9837;, E&#9837;</option>
@@ -618,7 +657,7 @@
   </section>
 
   <!-- PLAN -->
-  <section class="view" id="view-plan">
+  <section class="view on" id="view-plan">
     <div class="panel">
       <span class="lbl">Choose today's adventure</span>
       <div class="tracks">
@@ -653,7 +692,7 @@
 
     <div class="panel">
       <span class="lbl">Back up or move your progress</span>
-      <p class="note" style="margin-top:0">Your place on each track lives in this browser at this address \u2014 it does not travel with the file. Copy this out to keep it, or paste a backup in to restore it.</p>
+      <p class="note" style="margin-top:0">Your place on each track lives in this browser at this address — it does not travel with the file. Copy this out to keep it, or paste a backup in to restore it.</p>
       <textarea id="logData" rows="3" style="width:100%;background:var(--panel-2);color:var(--cream);
         border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:14px;padding:10px"></textarea>
       <div class="btnrow">
@@ -722,8 +761,20 @@ const SHAPES={
   dom7:{n:'Dominant 7',s:[0,4,7,10],i:['R','3','5','\u266D7'],l:[0,2,4,6],d:'Major triad plus \u266D7. Major 3rd against a flat 7th \u2014 the blues engine.'},
   m7b5:{n:'Minor 7\u266D5 (half-diminished)',s:[0,3,6,10],i:['R','\u266D3','\u266D5','\u266D7'],l:[0,2,4,6],d:'Diminished triad plus \u266D7. Common as the ii chord in a minor key.'}}
 };
-/* Ordered from the open E string upward \u2014 the way the instrument runs. */
-const ROOTS=['E','F','F\u266F','G\u266D','G','A\u266D','A','B\u266D','B','C','C\u266F','D\u266D','D','E\u266D'];
+/* Minor keys take sharps, major keys take flats: C\u266F minor, but D\u266D major.
+   The row respells itself to match whatever shape is selected. */
+const NAME_MINOR=['C','C\u266F','D','E\u266D','E','F','F\u266F','G','A\u266D','A','B\u266D','B'];
+const NAME_MAJOR=['C','D\u266D','D','E\u266D','E','F','G\u266D','G','A\u266D','A','B\u266D','B'];
+const ROOT_ORDER=[4,5,6,7,8,9,10,11,0,1,2,3];   /* open E upward */
+const MINORISH=new Set(['minpent','natmin','harmmin','blues','dorian','phrygian','locrian',
+                        'min','dim','min7','m7b5']);
+function rootNames(){
+  if(state.tab==='practice'&&state.mode==='triads'){
+    const t=$('triadType')?$('triadType').value:'maj';
+    return (t==='min'||t==='dim')?NAME_MINOR:NAME_MAJOR;
+  }
+  return MINORISH.has(state.shapeKey)?NAME_MINOR:NAME_MAJOR;
+}
 
 /* ================= scale patterns: hear and see =================
    One octave from the root, plus every position of the current shape. */
@@ -810,7 +861,7 @@ const OPENPC=[4,9,2,7]; /* E A D G, index 0 = lowest */
 
 /* ================= state ================= */
 const state={root:'E',shapeKey:'minpent',frets:12,labels:'names',ghosts:false,
-             tab:'scales',form:'chart',mode:'run',ramp:false,pLabels:'degrees'};
+             tab:'plan',form:'open3',mode:'run',ramp:false,pLabels:'degrees'};
 function currentShape(){for(const g in SHAPES)if(SHAPES[g][state.shapeKey])return SHAPES[g][state.shapeKey];}
 function shapeTones(){
   const sh=currentShape(),out=new Map();
@@ -821,14 +872,28 @@ const $=id=>document.getElementById(id);
 
 /* ================= controls ================= */
 const rootsEl=$('roots');
-ROOTS.forEach(r=>{
-  const b=document.createElement('button');
-  b.className='pill';b.textContent=r;b.setAttribute('aria-pressed',r===state.root);
-  b.onclick=()=>{state.root=r;[...rootsEl.children].forEach(c=>c.setAttribute('aria-pressed',c.textContent===r));
-    render();renderGrips();if(!running)buildRun();
-    if(state.mode==='triads')buildTriads();};
-  rootsEl.appendChild(b);
-});
+function syncRootPills(){
+  const pc=pcOf(state.root);
+  [...rootsEl.children].forEach(c=>c.setAttribute('aria-pressed',+c.dataset.pc===pc));
+}
+function renderRoots(){
+  const names=rootNames(),pc=pcOf(state.root);
+  rootsEl.innerHTML='';
+  ROOT_ORDER.forEach(k=>{
+    const b=document.createElement('button');
+    b.className='pill';b.textContent=names[k];b.dataset.pc=k;
+    b.setAttribute('aria-pressed',k===pc);
+    b.onclick=()=>{
+      state.root=names[k];syncRootPills();
+      render();renderGrips();if(!running)buildRun();
+      if(state.mode==='triads')buildTriads();
+      if($('keyNow'))$('keyNow').textContent=state.root;
+    };
+    rootsEl.appendChild(b);
+  });
+  /* keep the written root in the spelling the row is using */
+  if(state.root!==names[pc]){state.root=names[pc];}
+}
 const shapeSel=$('shape');
 for(const g in SHAPES){
   const og=document.createElement('optgroup');og.label=g;
@@ -836,7 +901,10 @@ for(const g in SHAPES){
   shapeSel.appendChild(og);
 }
 shapeSel.value=state.shapeKey;
-shapeSel.onchange=()=>{state.shapeKey=shapeSel.value;render();};
+shapeSel.onchange=()=>{
+  state.shapeKey=shapeSel.value;
+  renderRoots();render();renderGrips();buildRun();
+};
 const fretBtns=[...document.querySelectorAll('[data-frets]')];
 fretBtns.forEach(b=>b.onclick=()=>{state.frets=+b.dataset.frets;syncToggles();render();});
 const labelsBtn=$('labels');
@@ -871,10 +939,13 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
   $('runBoardWrap').style.display=state.mode==='run'?'':'none';
   if(state.mode==='walk'){walkBar=0;renderWalkBoard();}
   if(state.mode==='chords'){cBar=0;renderChordMode();}
+  $('tapPick').style.display=state.mode==='tap'?'':'none';
+  $('tapPanel').style.display=state.mode==='tap'?'':'none';
+  if(state.mode==='tap'){tapStep=-1;renderTap();}
   $('triadPick').style.display=state.mode==='triads'?'':'none';
   $('triadPanel').style.display=state.mode==='triads'?'':'none';
   if(state.mode==='triads'){tIdx=0;buildTriads();}
-  drawBeats();
+  renderRoots();drawBeats();
   state.ramp=state.mode==='metro';syncRamp();
   buildRun();drawBeats();refreshMeta();});
 const rampBtn=$('rampBtn');
@@ -888,7 +959,7 @@ function syncRamp(){
 /* ================= fretboard (scales) ================= */
 const OPEN=[{pc:7,w:1.1},{pc:2,w:1.5},{pc:9,w:2.0},{pc:4,w:2.7}]; /* display order G D A E */
 const DOTS=[3,5,7,9,15,17,19,21],DDOTS=[12,24];
-function neckSvg(F,fw,drawNote){
+function neckSvg(F,fw,drawNote,extras){
   /* Laid out for a fretless neck: no fret wires, just position lines where the dots
      are, and every note sits exactly on its line \u2014 finger on the line, that note sounds. */
   const nutX=42,gap=36,top=40,yOf=i=>top+i*gap;
@@ -908,6 +979,7 @@ function neckSvg(F,fw,drawNote){
   s+='<rect x="'+(nutX-6)+'" y="'+bT+'" width="6" height="'+bH+'" fill="#ded6c4"/>';
   [1.2,1.6,2.1,2.8].forEach((w,i)=>{s+='<line x1="0" y1="'+yOf(i)+'" x2="'+W+'" y2="'+yOf(i)+'" stroke="var(--string)" stroke-width="'+w+'" opacity=".7"/>';});
   for(let row=0;row<4;row++)for(let f=0;f<=F;f++)s+=drawNote(row,f,xOf(f),yOf(row));
+  if(extras)s+=extras(xOf,yOf,bT,bH);
   return s+'</svg>';
 }
 function render(){
@@ -959,24 +1031,24 @@ const TYPE_NAME={maj:'Major',min:'Minor',dom7:'Seventh',maj7:'Major 7',min7:'Min
                  m7b5:'Minor 7\u266D5',dim7:'Diminished'};
 const DEG12={0:'R',1:'\u266D9',2:'9',3:'\u266D3',4:'3',5:'11',6:'\u266D5',7:'5',8:'\u266D13',9:'6',10:'\u266D7',11:'7'};
 const SYSTEMS={
- chart:{label:'Open position \u2014 from the printed chart',types:['maj','min','dom7','maj7','min7'],
-   note:'Open-position grips for the seven natural roots, four notes each. Two cells on the printed chart were wrong and are corrected here.'},
+ chart:{label:'Open position',types:['maj','min','dom7','maj7','min7'],
+   note:'Four notes in open position, for the seven natural roots only. Easy to grab, but the lowest and thickest sounding of the five.'},
  moveE:{label:'Movable \u2014 root on E string',anchor:0,types:['maj','min','dom7','maj7','min7'],
    sh:{maj:[[0,0],[1,2],[2,2],[3,1]],min:[[0,0],[1,2],[2,2],[3,0]],dom7:[[0,0],[1,2],[2,0],[3,1]],
        maj7:[[0,0],[1,2],[2,1],[3,1]],min7:[[0,0],[1,2],[2,0],[3,0]]},
-   note:'The same four-note grip in every key. Slide it to the fret where the E string gives your root.'},
+   note:'Four notes with the root on the E string. The same grip works in every key \u2014 slide it to your root.'},
  moveA:{label:'Movable \u2014 root on A string',anchor:1,minf:2,types:['maj','min','dom7','maj7','min7'],
    sh:{maj:[[0,0],[1,0],[2,-1],[3,2]],min:[[0,0],[1,0],[2,-2],[3,2]],dom7:[[0,0],[1,0],[2,-1],[3,0]],
        maj7:[[0,0],[1,0],[2,-1],[3,1]],min7:[[0,0],[1,0],[2,-2],[3,0]]},
-   note:'Root on the A string with the fifth underneath it on the E string.'},
+   note:'Four notes with the root on the A string and the fifth below it. Sits a little higher, so it stays clearer.'},
  close3:{label:'Three-note close voicing',anchor:1,octave:'up',types:['maj7','dom7','min7','m7b5','dim7'],
    sh:{maj7:[[1,0],[2,-1],[3,1]],dom7:[[1,0],[2,-1],[3,0]],min7:[[1,0],[2,-2],[3,0]],
        m7b5:[[1,0],[2,1],[3,0]],dim7:[[1,0],[2,1],[3,-1]]},
-   note:'Root, 3rd and 7th only \u2014 the 5th is dropped so the chord stays clear. All three notes inside one octave. Played up the neck: low chords turn to mud. On the \u266D5 chords the 3rd is dropped instead of the 5th.'},
+   note:'Root, 3rd and 7th, all inside one octave. The 5th is dropped \u2014 it says nothing about the chord and muddies the low end. Play these up the neck.'},
  open3:{label:'Three-note open voicing (spread)',anchor:0,octave:'high',types:['maj7','dom7','min7','m7b5','dim7'],
    sh:{maj7:[[0,0],[2,1],[3,1]],dom7:[[0,0],[2,0],[3,1]],min7:[[0,0],[2,0],[3,0]],
        m7b5:[[0,0],[2,0],[3,3]],dim7:[[0,0],[2,-1],[3,3]]},
-   note:'The same three notes with the 3rd lifted an octave, spreading the chord past an octave. Same fingering family: one note moves to change chord type.'}};
+   note:'The same three notes with the 3rd lifted an octave. Wider spacing rings clearer on bass \u2014 start here. One note moves to change the chord type.'}};
 
 function gripFor(sysKey,type,rootName){
   const root=rootName||state.root,sys=SYSTEMS[sysKey],rootPc=pcOf(root);
@@ -990,6 +1062,15 @@ function gripFor(sysKey,type,rootName){
   if(sys.octave==='high'&&f<5)f+=12;
   return sys.sh[type].map(x=>({str:x[0],fret:f+x[1]}));
 }
+let GRIPS_HEARD=[];
+function playGrip(i){
+  const notes=GRIPS_HEARD[i];
+  if(!notes)return;
+  if(!audioReady()){withAudio(()=>playGrip(i));return;}
+  const midis=notes.map(n=>OPENMIDI_R[n.str]+n.fret).sort((a,b)=>a-b);
+  let t=ctx.currentTime+.1;
+  midis.forEach(m=>{pluck(m,t,2.6);t+=.26;});     /* rolled, and left to ring together */
+}
 function noteStack(notes,rootPc){
   return '<div class="gnotes">'+notes.map(n=>{
     const pc=(OPENPC[n.str]+n.fret)%12,deg=DEG12[((pc-rootPc)%12+12)%12],isRoot=deg==='R';
@@ -999,8 +1080,10 @@ function noteStack(notes,rootPc){
 function gripSvg(notes,rootPcOverride){
   const rootPc=rootPcOverride===undefined?pcOf(state.root):rootPcOverride;
   const frets=notes.map(n=>n.fret),lo=Math.min(...frets),hi=Math.max(...frets);
-  const base=lo===0?0:Math.max(1,Math.min(lo,hi-3));
-  const rows=Math.max(4,hi-(base||1)+1),cw=30,rh=26,pad=28,W=3*cw+2*pad,H=rows*rh+pad+36;
+  /* Every diagram is the same size so the note lists underneath line up in a row. */
+  const rows=5;
+  const base=lo===0?0:Math.max(1,Math.min(lo,hi-(rows-1)));
+  const cw=30,rh=26,pad=28,W=3*cw+2*pad,H=rows*rh+pad+36;
   const x0=pad,y0=pad;let s='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
   for(let i=0;i<4;i++)s+='<line x1="'+(x0+i*cw)+'" y1="'+y0+'" x2="'+(x0+i*cw)+'" y2="'+(y0+rows*rh)+'" stroke="var(--line)" stroke-width="1.4"/>';
   for(let r=0;r<=rows;r++)s+='<line x1="'+x0+'" y1="'+(y0+r*rh)+'" x2="'+(x0+3*cw)+'" y2="'+(y0+r*rh)+'" stroke="var(--line)" stroke-width="1.4"/>';
@@ -1023,14 +1106,17 @@ function gripSvg(notes,rootPcOverride){
 }
 function renderGrips(){
   const sysKey=state.form,sys=SYSTEMS[sysKey],rootPc=pcOf(state.root);
+  GRIPS_HEARD=[];
   document.querySelectorAll('[data-form]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.form===sysKey));
   const html=sys.types.map(t=>{
     const notes=gripFor(sysKey,t);
     if(!notes)return '';
-    return '<div class="grip"><div class="gname">'+state.root+' '+TYPE_NAME[t]+'</div>'+gripSvg(notes)+
-           noteStack(notes,rootPc)+'</div>';}).join('');
-  $('grips').innerHTML=html||'<p class="note">The printed chart only covers the seven natural roots. Pick C, D, E, F, G, A or B \u2014 or use one of the movable systems for '+state.root+'.</p>';
-  $('chordNote').textContent=sys.note+' Strings run E A D G left to right; \u00d7 marks a string you do not play.';
+    const gi=GRIPS_HEARD.push(notes)-1;
+    return '<button class="grip" data-hear="'+gi+'"><div class="gname">'+state.root+' '+TYPE_NAME[t]+'</div>'+
+           gripSvg(notes)+noteStack(notes,rootPc)+'<div class="hearline">tap to hear</div></button>';}).join('');
+  $('grips').innerHTML=html||'<p class="note">Open position covers the seven natural roots. Pick C, D, E, F, G, A or B \u2014 or use a movable system for '+state.root+'.</p>';
+  document.querySelectorAll('#grips [data-hear]').forEach(b=>b.onclick=()=>playGrip(+b.dataset.hear));
+  $('chordNote').textContent=sys.note+' Strings run E A D G left to right; \u00d7 marks a string you do not play. Tap a chord to hear it.';
 }
 
 /* ================= the position run =================
@@ -1098,24 +1184,19 @@ function markNote(idx){
   $('posOut').textContent=p.pos+' of '+runPositions;
   $('noteOut').textContent=(idx===SEQ.length-1?'final':((idx%notesPerPos)+1)+' of '+notesPerPos);
 }
-/* Spelling follows the shape: minor keys take sharps, major keys take flats \u2014
-   C\u266F minor, not D\u266D minor; D\u266D major, not C\u266F major. */
-const NAME_MINOR=['C','C\u266F','D','E\u266D','E','F','F\u266F','G','A\u266D','A','B\u266D','B'];
-const NAME_MAJOR=['C','D\u266D','D','E\u266D','E','F','G\u266D','G','A\u266D','A','B\u266D','B'];
 function keyNames(){
   const k=$('runScale').value;
   return (k==='majpent'||k==='major')?NAME_MAJOR:NAME_MINOR;
 }
 function setRoot(name){
-  state.root=name;
-  [...rootsEl.children].forEach(c=>c.setAttribute('aria-pressed',c.textContent===name));
+  state.root=name;syncRootPills();
   render();renderGrips();buildRun();
   $('keyNow').textContent=name;
 }
 function advanceKey(){
   const mode=$('rootCycle').value;
   if(mode==='off')return;
-  const names=keyNames(),step=mode==='fourths'?5:1;
+  const names=keyNames(),step=mode==='fourths'?5:mode==='fifths'?7:1;
   setRoot(names[(pcOf(state.root)+step)%12]);
 }
 $('rootCycle').onchange=()=>{
@@ -1151,7 +1232,9 @@ function refreshMeta(){
     ? Math.round(Math.min(bpm+(+$('stepBpm').value||0),+$('maxBpm').value||bpm))+
       (reps>1?' (pass '+(atThisTempo+1)+' of '+reps+')':'')
     : 'steady';
-  if(state.mode==='triads'){
+  if(state.mode==='tap'){
+    $('runNote').textContent=tapNow().n+': '+tapNow().seq.length+' notes, one per eighth, looping. The click marks the quarters.';
+  }else if(state.mode==='triads'){
     $('runNote').textContent=state.root+' '+TRIAD_TYPES[$('triadType').value].n.toLowerCase()+
       ' triad: '+TRIADS.length+' shapes, '+beatsPerBarNow()+' beats a bar, '+
       (+$('triadBars').value||1)+' bar(s) each.';
@@ -1166,9 +1249,10 @@ function refreshMeta(){
     const sc=RUN_SCALES[$('runScale').value]||RUN_SCALES.minpent,N=SEQ.length;
     const bars=N/8,played=Math.ceil(bars);
     const cyc=$('rootCycle').value;
-    $('runNote').textContent=(cyc==='off'?'':cyc==='fourths'
-        ?'Moving round the circle of fourths, a new key every pass. '
-        :'Climbing chromatically, a new key every pass \u2014 twelve passes takes you through every root. ')+
+    $('runNote').textContent=(cyc==='off'?''
+        :cyc==='fourths'?'Down a fourth each pass \u2014 the way progressions move. '
+        :cyc==='fifths'?'Up a fifth each pass \u2014 the same circle backwards, and the harder way across the strings. '
+        :'Climbing chromatically, a new key every pass. ')+
       state.root+' '+sc.n.toLowerCase()+': '+runPositions+' positions \u00d7 '+
       notesPerPos+' notes ('+sc.per+' per string up, turnaround, back down), plus a final root \u2014 '+
       N+' notes at two per click, '+(N/2)+' beats, '+(Math.round(bars*100)/100)+' bars. The last note lands in bar '+
@@ -1227,6 +1311,14 @@ function scheduler(){
       queue.push({t:nextTime,ci:ciLeft,beat,accent:beat===0,bar:0});
       nextTime+=60/bpm;ciLeft--;
       if(ciLeft<=0){phase='play';tick=0;}
+      continue;
+    }
+    if(state.mode==='tap'){
+      const len=tapNow().seq.length,e=tick%len,beat=Math.floor(e/2)%4;
+      if(e===0&&tick>0){cycle++;if(!bumpTempo())return;}
+      if(e%2===0)clickSound(nextTime,e===0);
+      queue.push({t:nextTime,tapStep:e,beat,accent:e===0,bar:Math.floor(e/8)+1});
+      nextTime+=30/bpm;tick++;
       continue;
     }
     if(state.mode==='triads'){
@@ -1289,6 +1381,13 @@ function paint(){
     $('cd').textContent='';
     $('barOut').textContent=q.bar;
     if(q.walkBar!==undefined&&q.walkBar!==walkBar){walkBar=q.walkBar;renderWalkBoard();}
+    if(q.tapStep!==undefined){
+      tapStep=q.tapStep;renderTap();
+      $('status').textContent='Tapping';$('status').classList.remove('rest');
+      $('dotLabel').textContent='';
+      $('posOut').textContent=(q.tapStep+1)+' of '+tapNow().seq.length;
+      $('noteOut').textContent='beat '+(q.beat+1);
+    }
     if(q.triadIdx!==undefined){
       if(q.triadIdx!==tIdx){tIdx=q.triadIdx;renderTriads();}
       $('status').textContent='Triads';$('status').classList.remove('rest');
@@ -1390,13 +1489,18 @@ function stop(){
   markNote(-1);$('posOut').textContent='\u2014';$('noteOut').textContent='\u2014';
 }
 $('start').onclick=()=>running?stop():start();
-$('pLabelBtn').onclick=()=>{
+function syncLabelBtns(){
+  document.querySelectorAll('[data-plabel]').forEach(b=>{
+    b.textContent=state.pLabels==='degrees'?'degrees':'note names';
+    b.setAttribute('aria-pressed',state.pLabels==='names');});
+}
+document.querySelectorAll('[data-plabel]').forEach(b=>b.onclick=()=>{
   state.pLabels=state.pLabels==='degrees'?'names':'degrees';
-  $('pLabelBtn').textContent='Showing: '+(state.pLabels==='degrees'?'degrees':'note names');
-  $('pLabelBtn').setAttribute('aria-pressed',state.pLabels==='names');
+  syncLabelBtns();
   if(state.mode==='walk')renderWalkBoard();
   if(state.mode==='triads')renderTriads();
-};
+});
+syncLabelBtns();
 function restartBars(){
   const wasRunning=running;
   stop();walkBar=0;cBar=0;
@@ -1569,21 +1673,47 @@ renderGameBoard();renderChips();gameButtons();
    for each partial sits at a fret only approximately: the 3rd-fret harmonic node
    is a shade toward the bridge from the 3rd fret, the 4th- and 9th-fret nodes a
    shade behind theirs. Interval above the open string, in semitones: */
-const HARMONICS={3:31,4:28,5:24,7:19,9:28,12:12};
+/* Node positions are where the string actually divides, not where the frets are.
+   x is the position in fret coordinates; semi is what sounds above the open string. */
+const NODES={2:{x:2.31,semi:36,off:'well behind the 3rd'},
+             3:{x:3.16,semi:31,off:'just past the 3rd'},
+             4:{x:3.86,semi:28,off:'just behind the 4th'},
+             5:{x:4.98,semi:24,off:'on the 5th'},
+             7:{x:7.02,semi:19,off:'on the 7th'},
+             9:{x:8.84,semi:28,off:'just behind the 9th'},
+             12:{x:12,semi:12,off:'on the 12th'},
+             16:{x:15.86,semi:28,off:'just behind the 16th'},
+             19:{x:19.02,semi:19,off:'on the 19th'}};
+const HARMONICS=Object.fromEntries(Object.entries(NODES).map(([k,v])=>[k,v.semi]));
 const HARM_STR=[{n:'E',midi:28},{n:'A',midi:33},{n:'D',midi:38},{n:'G',midi:43}]; /* index 0 = lowest */
 const hName=m=>SHARPNAMES[((m%12)+12)%12]+(Math.floor(m/12)-1);
-function harmMidi(str,fret){return HARM_STR[str].midi+HARMONICS[fret];}
+function harmMidi(str,fret){return HARM_STR[str].midi+Math.round(NODES[fret].semi);}
+function nodeX(f){return NODES[f].x;}
+function harmTri(cx,cy,label,dim){
+  return '<polygon points="'+cx+','+(cy-16)+' '+(cx-16)+','+(cy+12)+' '+(cx+16)+','+(cy+12)+'" fill="var(--tone)"'+
+    (dim?' opacity=".55"':'')+'/>'+
+    '<text x="'+cx+'" y="'+(cy+9)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+
+    (label.length>1?11:13)+'" fill="#062018">'+label+'</text>';
+}
 function renderHarm(){
-  const F=15;
-  const html=neckSvg(F,48,(row,f,cx,cy)=>{
-    if(!HARMONICS[f])return '';
-    const str=3-row,m=harmMidi(str,f),nm=SHARPNAMES[m%12];
-    return '<polygon points="'+cx+','+(cy-16)+' '+(cx-16)+','+(cy+12)+' '+(cx+16)+','+(cy+12)+'" fill="var(--tone)"/>'+
-      '<text x="'+cx+'" y="'+(cy+9)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+(nm.length>1?11:13)+'" fill="#062018">'+nm+'</text>';
+  const keys=[2,3,4,5,7,9,12,16,19];
+  const html=neckSvg(20,46,()=>'',(xOf,yOf,bT,bH)=>{
+    let out='';
+    keys.forEach(k=>{
+      const x=xOf(0)+ (nodeX(k))*(xOf(1)-xOf(0)) + (xOf(1)-xOf(0))*0;
+      const cx=xOf(1)+(nodeX(k)-1)*(xOf(2)-xOf(1));
+      out+='<line x1="'+cx+'" y1="'+bT+'" x2="'+cx+'" y2="'+(bT+bH)+'" stroke="rgba(87,191,166,.35)" stroke-width="1.5" stroke-dasharray="4 4"/>';
+      for(let str=0;str<4;str++){
+        const row=3-str,m=harmMidi(str,k);
+        out+=harmTri(cx,yOf(row),SHARPNAMES[m%12]);
+      }
+      out+='<text x="'+cx+'" y="'+(bT+bH+46)+'" text-anchor="middle" fill="var(--tone)" font-family="var(--mono)" font-size="12">'+NODES[k].x.toFixed(2).replace(/\.00$/,'')+'</text>';
+    });
+    return out;
   });
   $('harmBoard').innerHTML=html;
-  $('harmIntro').textContent='Touch the string right on the position line \u2014 do not press \u2014 pluck, then lift. Each triangle is the note that sounds, which is not the note you would get by stopping the string there. The 12th gives the octave, the 7th an octave and a fifth, the 5th two octaves, the 4th and 9th two octaves and a major third, the 3rd two octaves and a fifth. Above the 12th the pattern mirrors itself: 16 matches 4, 19 matches 7, 24 matches 5.';
-  $('harmNote').textContent='The nodes for the 3rd, 4th and 9th sit a shade off the line \u2014 the 3rd slightly toward the bridge, the 4th and 9th slightly behind. Slide a few millimetres either way until it rings. Playback is a sine tone, which is close to what a natural harmonic actually is.';
+  $('harmIntro').textContent='Touch the string at the node \u2014 do not press \u2014 pluck, then lift. The dashed lines are where the nodes actually are, which is not always where the frets are: the 5th, 7th and 12th sit right on the line, but the 3rd is a shade past it, and the 2nd, 4th, 9th and 16th sit behind theirs. Each triangle is the note that sounds, not the note under your finger.';
+  $('harmNote').textContent='At the 4th, 7th and 12th the harmonic matches the note you would get by stopping the string there. Everywhere else it does not. Playing 5 \u2192 4 \u2192 3 on any one string gives you a major triad. The 3rd, 4th and 5th partials are a few cents off equal temperament \u2014 that is the instrument, not your touch.';
   renderHarmEx();
 }
 const HARM_EX=[
@@ -1603,8 +1733,28 @@ const HARM_EX=[
   seq:[[3,12],[3,7],[2,7],[1,7],[0,7]]},
  {t:'High cascade',d:'The 3rd- and 4th-position harmonics, where the notes are highest and the touch is fussiest. D, B, A, F\u266F, G, D.',
   seq:[[3,3],[3,4],[2,3],[2,4],[3,5],[3,7]]},
- {t:'Wide bell chord',d:'E and B two octaves apart with F\u266F between them \u2014 a spread voicing built only from harmonics. Let each ring into the next.',
-  seq:[[0,12],[2,4],[0,7],[3,4]]}];
+ {t:'Wide bell chord',d:'E and B two octaves apart with F\u266F between them. Let each ring into the next.',
+  seq:[[0,12],[2,4],[0,7],[3,4]]},
+ {t:'Major triad on one string',d:'Nodes 5, 4 and 3 in order on the G string: G, B, D. The same three nodes give a major triad on any string.',
+  seq:[[3,5],[3,4],[3,3]]},
+ {t:'Triad ladder',d:'The 5\u20134\u20133 triad on the E string, then the A string. E major, then A major, without moving the right hand.',
+  seq:[[0,5],[0,4],[0,3],[1,5],[1,4],[1,3]]},
+ {t:'Full sweep, one string',d:'Every node on the E string from the 12th down to the 2nd: E, B, E, G\u266F, B, E. Three octaves on one string.',
+  seq:[[0,12],[0,7],[0,5],[0,4],[0,3],[0,2]]},
+ {t:'Three-octave chime',d:'The node behind the 3rd fret sounds three octaves up. Light touch, and let the low ones ring underneath.',
+  seq:[[0,12],[1,12],[0,2],[1,2]]},
+ {t:'E minor bell',d:'E, B and G across two strings. The only minor triad the natural harmonics will give you down low.',
+  seq:[[0,12],[0,7],[3,12]]},
+ {t:'D major 7',d:'D, A, C\u266F, F\u266F climbing across three strings. Let it ring as one chord rather than four notes.',
+  seq:[[2,12],[2,7],[1,4],[2,4]]},
+ {t:'G major 7, spread',d:'G, D, F\u266F, B \u2014 the same chord type opened out, with the 7th up top.',
+  seq:[[3,12],[3,7],[2,4],[3,4]]},
+ {t:'F\u266F minor 7',d:'A, C\u266F, E, F\u266F. The root arrives last, which is what gives it the hanging quality.',
+  seq:[[2,7],[1,4],[1,3],[2,4]]},
+ {t:'Descending cascade',d:'From the highest node down to the low E: G, D, A, E, B, E. Aim for an even bell tone on the way down.',
+  seq:[[3,2],[3,3],[2,3],[1,3],[0,3],[0,5]]},
+ {t:'E pedal, moving voices',d:'Low E between each upper note: B, then F\u266F, then C\u266F. One hand holds the ground while the other moves.',
+  seq:[[0,12],[3,4],[0,12],[2,4],[0,12],[1,4]]}];
 function renderHarmEx(){
   $('harmEx').innerHTML=HARM_EX.map((e,i)=>{
     const notes=e.seq.map(([st,fr])=>hName(harmMidi(st,fr))).join('  \u00b7  ');
@@ -1616,11 +1766,19 @@ function renderHarmEx(){
 function harmExBoard(e){
   const order=new Map();
   e.seq.forEach(([st,fr],i)=>{const k=st+':'+fr;order.set(k,(order.get(k)?order.get(k)+',':'')+(i+1));});
-  return neckSvg(13,44,(row,f,cx,cy)=>{
-    const str=3-row,lab=order.get(str+':'+f);
-    if(!lab)return '';
-    return '<polygon points="'+cx+','+(cy-15)+' '+(cx-15)+','+(cy+11)+' '+(cx+15)+','+(cy+11)+'" fill="var(--tone)"/>'+
-      '<text x="'+cx+'" y="'+(cy+8)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+(lab.length>1?10:12)+'" fill="#062018">'+lab+'</text>';
+  const keys=[...new Set(e.seq.map(x=>x[1]))];
+  return neckSvg(20,42,()=>'',(xOf,yOf,bT,bH)=>{
+    let out='';
+    keys.forEach(k=>{
+      const cx=xOf(1)+(nodeX(k)-1)*(xOf(2)-xOf(1));
+      out+='<line x1="'+cx+'" y1="'+bT+'" x2="'+cx+'" y2="'+(bT+bH)+'" stroke="rgba(87,191,166,.3)" stroke-width="1.4" stroke-dasharray="4 4"/>';
+      for(let str=0;str<4;str++){
+        const lab=order.get(str+':'+k);
+        if(lab)out+=harmTri(cx,yOf(3-str),lab);
+      }
+      out+='<text x="'+cx+'" y="'+(bT+bH+46)+'" text-anchor="middle" fill="var(--tone)" font-family="var(--mono)" font-size="12">'+NODES[k].x.toFixed(2).replace(/\.00$/,'')+'</text>';
+    });
+    return out;
   });
 }
 function playHarmEx(i){
@@ -1686,6 +1844,63 @@ function renderWalkBoard(){
   renderWalkBars();
   $('walkHow').textContent='Filled circles are this bar\u2019s chord tones, labelled by degree; the white rings are the root of the next chord \u2014 that is where bar\u2019s end is heading. Four quarter notes to a bar: land the root on beat 1, chord tones on 2 and 3 (the 3rd and 7th are what name the chord), and on beat 4 play a note a half step or a scale step away from the next root so beat 1 arrives on its own. Keep the line stepping; save leaps for when you need to reset your register.';
 }
+
+/* ================= tapping =================
+   L is a left-hand tap, R a right-hand tap. Sequences are one note per eighth.
+   A step with h:1 is a tapped harmonic \u2014 the note sounds an octave above the fret. */
+const TAPS=[
+ {n:'Octave taps',d:'Left hand taps the root, right hand the octave two strings up. The oldest tapping idea there is.',
+  seq:[[0,5,'L'],[2,7,'R'],[0,5,'L'],[2,7,'R'],[0,7,'L'],[2,9,'R'],[0,7,'L'],[2,9,'R']]},
+ {n:'A major triad',d:'Root under the left hand, 3rd and 5th tapped above it. The shape moves \u2014 same fingering, any root on the E string.',
+  seq:[[0,5,'L'],[3,6,'R'],[3,9,'R'],[3,6,'R'],[0,5,'L'],[3,6,'R'],[3,9,'R'],[3,6,'R']]},
+ {n:'A minor triad',d:'The same shape with the 3rd pulled down a fret. Play it straight after the major and listen to the one note move.',
+  seq:[[0,5,'L'],[3,5,'R'],[3,9,'R'],[3,5,'R'],[0,5,'L'],[3,5,'R'],[3,9,'R'],[3,5,'R']]},
+ {n:'Major cycle of fourths',d:'A, D, G, C \u2014 the same triad shape sliding down a fourth each bar.',
+  seq:[[0,5,'L'],[3,6,'R'],[3,9,'R'],[3,6,'R'],[0,10,'L'],[3,11,'R'],[3,14,'R'],[3,11,'R'],
+       [0,3,'L'],[3,4,'R'],[3,7,'R'],[3,4,'R'],[0,8,'L'],[3,9,'R'],[3,12,'R'],[3,9,'R']]},
+ {n:'Minor cycle of fourths',d:'Same journey, minor shape. Am, Dm, Gm, Cm.',
+  seq:[[0,5,'L'],[3,5,'R'],[3,9,'R'],[3,5,'R'],[0,10,'L'],[3,10,'R'],[3,14,'R'],[3,10,'R'],
+       [0,3,'L'],[3,3,'R'],[3,7,'R'],[3,3,'R'],[0,8,'L'],[3,8,'R'],[3,12,'R'],[3,8,'R']]},
+ {n:'Two-hand ostinato',d:'Left hand keeps root and fifth underneath while the right hand taps the upper voice.',
+  seq:[[0,5,'L'],[1,7,'L'],[3,9,'R'],[3,6,'R'],[0,5,'L'],[1,7,'L'],[3,6,'R'],[3,9,'R']]},
+ {n:'Tapped harmonics',d:'Left hand frets the note, right hand taps twelve frets higher. The octave above rings out as a harmonic.',
+  seq:[[0,3,'L'],[0,15,'R',1],[1,3,'L'],[1,15,'R',1],[2,3,'L'],[2,15,'R',1],[3,3,'L'],[3,15,'R',1]]}];
+const TAP_KEY=[['L','left hand'],['R','right hand'],['\u25b3','tapped harmonic']];
+let tapStep=-1;
+function tapNow(){return TAPS[+$('tapPat').value]||TAPS[0];}
+function renderTap(){
+  const t=tapNow(),top=Math.max(...t.seq.map(x=>x[1]));
+  $('tapName').textContent=t.n;
+  $('tapHow').textContent=t.d;
+  $('tapKey').innerHTML=TAP_KEY.map(k=>'<span class="chip"><b>'+k[0]+'</b> '+k[1]+'</span>').join('');
+  const order=new Map();
+  t.seq.forEach((x,i)=>{const k=x[0]+':'+x[1];order.set(k,(order.get(k)?order.get(k)+',':'')+(i+1));});
+  const cur=t.seq[tapStep];
+  $('tapBoard').innerHTML=neckSvg(Math.min(20,Math.max(15,top+1)),44,(row,f,cx,cy)=>{
+    const str=3-row,lab=order.get(str+':'+f);
+    if(!lab)return '';
+    const step=t.seq.find(x=>x[0]===str&&x[1]===f);
+    const isL=step[2]==='L',isCur=cur&&cur[0]===str&&cur[1]===f;
+    const harm=step[3]===1;
+    const fill=isL?'var(--root)':'var(--tone)';
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="'+(isCur?16:14)+'" fill="'+fill+'"'+
+      (isCur?' stroke="#fff" stroke-width="2.5"':' stroke="rgba(0,0,0,.35)"')+'/>'+
+      (harm?'<polygon points="'+cx+','+(cy-19)+' '+(cx-6)+','+(cy-10)+' '+(cx+6)+','+(cy-10)+'" fill="var(--cream)"/>':'')+
+      '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+
+      (lab.length>1?10:12)+'" fill="'+(isL?'#180c07':'#062018')+'">'+lab+'</text>';
+  });
+}
+function playTap(){
+  if(!audioReady()){withAudio(playTap);return;}
+  const t=tapNow(),step=.32;let x=ctx.currentTime+.1;
+  t.seq.forEach(n=>{pluck(OPENMIDI_R[n[0]]+n[1]+(n[3]===1?12:0),x,step*1.7);x+=step;});
+}
+$('tapPat')&&(function(){
+  $('tapPat').innerHTML=TAPS.map((x,i)=>'<option value="'+i+'">'+x.n+'</option>').join('');
+  $('tapPat').onchange=()=>{stop();tapStep=-1;renderTap();refreshMeta();};
+  $('tapHear').onclick=playTap;
+})();
+
 /* ---- triads: three notes, one per string, every inversion up the neck ---- */
 const TRIAD_TYPES={maj:{n:'Major',s:[0,4,7]},min:{n:'Minor',s:[0,3,7]},
                    dim:{n:'Diminished',s:[0,3,6]},aug:{n:'Augmented',s:[0,4,8]}};
@@ -1748,7 +1963,7 @@ function renderTriads(){
   $('tBars').innerHTML=TRIADS.map((sh,i)=>'<div class="barcell'+(i===tIdx?' on':'')+'">'+(i+1)+'</div>').join('');
   $('tHow').textContent='Three notes, one per string, every inversion up the neck. Play the shape up and down for its bars, then move to the next one.';
 }
-['triadType','triadSet'].forEach(id=>$(id)&&($(id).onchange=()=>{stop();tIdx=0;buildTriads();refreshMeta();}));
+['triadType','triadSet'].forEach(id=>$(id)&&($(id).onchange=()=>{stop();tIdx=0;renderRoots();buildTriads();refreshMeta();}));
 ['triadBars','triadBeats'].forEach(id=>$(id)&&($(id).onchange=()=>{stop();drawBeats();refreshMeta();}));
 $('tRestart')&&($('tRestart').onclick=()=>{const r=running;stop();tIdx=0;renderTriads();if(r)start();});
 
@@ -1785,9 +2000,12 @@ function renderChordMode(){
   const show=(root,type,label)=>{
     const notes=gripFor(sys,type,root),pc=pcOf(root);
     if(!notes)return '';
-    return '<div class="grip"><div class="gname">'+label+' \u2014 '+root+chordSuffix(type)+'</div>'+
-           gripSvg(notes,pc)+noteStack(notes,pc)+'</div>';};
+    const gi=GRIPS_HEARD.push(notes)-1;
+    return '<button class="grip" data-hear="'+gi+'"><div class="gname">'+label+' \u2014 '+root+chordSuffix(type)+'</div>'+
+           gripSvg(notes,pc)+noteStack(notes,pc)+'<div class="hearline">tap to hear</div></button>';};
+  GRIPS_HEARD=[];
   $('cGrip').innerHTML=show(cur[0],cur[1],'now')+show(nxt[0],nxt[1],'next');
+  document.querySelectorAll('#cGrip [data-hear]').forEach(b=>b.onclick=()=>playGrip(+b.dataset.hear));
   $('cHow').textContent='One grip per chord, '+cBarsPer()+' bar'+(cBarsPer()>1?'s':'')+' each, looping. '+
     'Play the chord on beat 1 and let it ring, or break it into an arpeggio across the bar. Watch the "next" diagram while the current chord is still sounding \u2014 the whole skill is arriving on the change without a scramble.';
 }
@@ -1824,13 +2042,15 @@ function nfNext(){
 }
 function nfBegin(){
   const v=$('nfSet').value;
-  nfList=v==='all'?FOURTHS.slice():FOURTHS.slice(+v*4,+v*4+4);
+  const order=$('nfOrder').value==='fifths'?FOURTHS.slice().reverse():FOURTHS.slice();
+  nfList=v==='all'?order:order.slice(+v*4,+v*4+4);
   nfI=0;nfStr=-1;nfOn=true;$('nfSkip').disabled=false;$('nfStart').textContent='Restart';
   nfNext();
 }
 $('nfStart').onclick=nfBegin;
 $('nfSkip').onclick=()=>{if(nfOn){nfStreak=0;$('nfStreak').textContent=0;nfNext();}};
 $('nfSet').onchange=()=>{if(nfOn)nfBegin();};
+$('nfOrder').onchange=()=>{if(nfOn)nfBegin();};
 $('nfBoard').addEventListener('click',ev=>{
   const t=ev.target.closest('circle.gt');
   if(!t||!nfOn)return;
@@ -2103,6 +2323,15 @@ const PLAN={
      {mode:'walk',prog:0,bpm:75,min:6}],
           [4,'A full chorus, no stops','If you fall out, come back in on the next bar rather than stopping.',
      {mode:'walk',prog:0,bpm:80,min:4}]]},
+  {t:'Tapping',f:'Both hands on the neck. Even volume between them is the whole job.',
+   steps:[[4,'Octave taps','Left hand root, right hand octave. Nothing else.',
+     {mode:'tap',tapPat:0,bpm:60,min:4}],
+          [4,'Major and minor triads','Same shape, one note moves. Play them back to back.',
+     {mode:'tap',tapPat:1,bpm:60,min:4}],
+          [5,'Cycle of fourths','The triad shape sliding down a fourth each bar.',
+     {mode:'tap',tapPat:3,bpm:55,min:5}],
+          [4,'Tapped harmonics','Fret with the left, tap twelve frets up with the right.',
+     {mode:'tap',tapPat:6,bpm:50,min:4}]]},
   {t:'Changes in time',f:'Grips arriving on the beat, with no scramble before the change.',
    src:'your chord-changes mode',
    steps:[[5,'Two bars each','ii\u2013V\u2013I, two bars per chord.',
@@ -2111,7 +2340,7 @@ const PLAN={
           [5,'The long cycle','Autumn-style changes, eight chords.',
      {mode:'chords',prog:4,bpm:75,min:5}]]}]}};
 
-const WOODSHED_VERSION='1.2 \u00b7 build s';
+const WOODSHED_VERSION='1.2 \u00b7 build ad';
 /* Safari and home-screen web apps hold on to the copy they first loaded. So ask the
    server, past the cache, whether a newer file exists and offer a one-tap reload. */
 let updateSeen=0;
@@ -2233,9 +2462,7 @@ function launchStep(tr,lvIdx,stepIdx){
   if(!cfg)return;
   planCursor={tr,lv:lvIdx,step:stepIdx};
   stop();
-  if(cfg.root){state.root=cfg.root;
-    [...rootsEl.children].forEach(c=>c.setAttribute('aria-pressed',c.textContent===cfg.root));
-    render();renderGrips();}
+  if(cfg.root){state.root=cfg.root;syncRootPills();render();renderGrips();}
   if(cfg.mode){const b=document.querySelector('[data-mode="'+cfg.mode+'"]');if(b)b.click();}
   if(cfg.runScale){$('runScale').value=cfg.runScale;buildRun();}
   $('rootCycle').value=cfg.cycle||'off';
@@ -2245,6 +2472,7 @@ function launchStep(tr,lvIdx,stepIdx){
     if(cfg.mode==='walk'){$('walkProg').value=cfg.prog;walkBar=0;renderWalkBoard();}
     if(cfg.mode==='chords'){$('chordProg').value=cfg.prog;cBar=0;renderChordMode();}}
   if(cfg.beats){$('beatsPerBar').value=cfg.beats;drawBeats();}
+  if(cfg.tapPat!==undefined){$('tapPat').value=cfg.tapPat;tapStep=-1;renderTap();}
   if(cfg.bpm){$('startBpm').value=cfg.bpm;bpm=cfg.bpm;}
   state.ramp=!!cfg.ramp;
   if(cfg.ramp){$('stepBpm').value=cfg.step||10;$('maxBpm').value=cfg.max||(cfg.bpm+40);
@@ -2278,7 +2506,7 @@ planLoad();
 document.getElementById('sndBtn').onclick=unlockAudio;audioBadge();
 $('chordProg').innerHTML=CHORD_PROGS.map((p,i)=>'<option value="'+i+'">'+p.n+'</option>').join('');
 ['chordProg','chordVoice','chordBars'].forEach(id=>$(id).onchange=()=>{stop();cBar=0;renderChordMode();refreshMeta();});
-renderChordMode();buildTriads();
-$('cycleWhere').style.display='none';$('keyNow').textContent=state.root;
+renderChordMode();buildTriads();renderTap();
+renderRoots();$('cycleWhere').style.display='none';$('keyNow').textContent=state.root;
 syncToggles();syncRamp();drawBeats();render();renderGrips();buildRun();renderHarm();refreshMeta();
 </script>
