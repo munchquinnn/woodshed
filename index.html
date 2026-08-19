@@ -295,9 +295,9 @@
         <button class="pill" data-mode="run" aria-pressed="true">Position run</button>
         <button class="pill" data-mode="walk" aria-pressed="false">Walking bass</button>
         <button class="pill" data-mode="chords" aria-pressed="false">Chord changes</button>
+        <button class="pill" data-mode="fret" aria-pressed="false">The Circle</button>
         <button class="pill" data-mode="triads" aria-pressed="false">Triads</button>
         <button class="pill" data-mode="tap" aria-pressed="false">Tapping</button>
-        <button class="pill" data-mode="fret" aria-pressed="false">Fretboard</button>
       </div>
       <div id="walkPick" style="margin-top:12px;max-width:340px;display:none">
         <span class="lbl">Progression</span>
@@ -2343,7 +2343,7 @@ const PLAN={
           [5,'The long cycle','Autumn-style changes, eight chords.',
      {mode:'chords',prog:4,bpm:75,min:5}]]}]}};
 
-const WOODSHED_VERSION='1.2 build af';   /* plain ASCII: this string gets compared against the file on the server */
+const WOODSHED_VERSION='1.2 build ag';   /* plain ASCII: this string gets compared against the file on the server */
 const decodeEsc=t=>t.replace(/\\u([0-9a-fA-F]{4})/g,(m,h)=>String.fromCharCode(parseInt(h,16)));
 const prettyVersion=v=>'Woodshed '+v.replace(' build',' \u00b7 build');
 /* Safari and home-screen web apps hold on to the copy they first loaded. So ask the
