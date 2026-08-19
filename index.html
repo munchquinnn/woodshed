@@ -54,6 +54,12 @@
   .view{display:none}.view.on{display:block}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .toggles{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .lineGrid{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .lineBar{border:1px solid var(--line);border-radius:4px;padding:8px;min-width:104px;background:var(--panel-2)}
+  .lineBar.on{border-color:var(--root);background:rgba(240,98,60,.12)}
+  .lineCh{font-family:var(--disp);letter-spacing:.1em;font-size:15px;color:var(--tone);margin-bottom:6px}
+  .lineNote{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:2px 0}
+  .lineNote span{color:var(--dim);font-size:12px}
   .grid16{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;margin:14px 0 12px;min-width:520px}
   .cell{border:1px solid var(--line);background:var(--panel-2);border-radius:4px;padding:12px 0;
     text-align:center;font-family:var(--disp);font-size:19px;letter-spacing:.04em;color:var(--cream)}
@@ -274,8 +280,8 @@
     <div class="panel">
       <span class="lbl">Chord system</span>
       <div class="toggles" style="margin-top:0">
-        <button class="pill" data-form="open3" aria-pressed="true">Three-note, spread</button>
-        <button class="pill" data-form="close3" aria-pressed="false">Three-note, close</button>
+        <button class="pill" data-form="close3" aria-pressed="true">Three-note, close</button>
+        <button class="pill" data-form="open3" aria-pressed="false">Three-note, spread</button>
         <button class="pill" data-form="moveE" aria-pressed="false">Four-note &mdash; root on E</button>
         <button class="pill" data-form="moveA" aria-pressed="false">Four-note &mdash; root on A</button>
         <button class="pill" data-form="chart" aria-pressed="false">Open position</button>
@@ -297,11 +303,24 @@
         <button class="pill" data-mode="walk" aria-pressed="false">Walking bass</button>
         <button class="pill" data-mode="chords" aria-pressed="false">Chord changes</button>
         <button class="pill" data-mode="fret" aria-pressed="false">The Circle</button>
+        <button class="pill" data-mode="scale" aria-pressed="false">Scales</button>
         <button class="pill" data-mode="triads" aria-pressed="false">Triads</button>
       </div>
       <div id="walkPick" style="margin-top:12px;max-width:340px;display:none">
         <span class="lbl">Progression</span>
         <select id="walkProg"></select>
+      </div>
+      <div id="scalePick" style="margin-top:12px;display:none">
+        <div class="grid2">
+          <div><span class="lbl">Walk through</span>
+            <select id="scaleSet">
+              <option value="types" selected>Scale types, same root</option>
+              <option value="modes">The seven modes, same key</option>
+            </select></div>
+          <div><span class="lbl">Bars each</span>
+            <select id="scaleBars"><option value="1">1 bar</option><option value="2" selected>2 bars</option>
+              <option value="4">4 bars</option></select></div>
+        </div>
       </div>
       <div id="triadPick" style="margin-top:12px;display:none">
         <div class="grid2">
@@ -317,11 +336,7 @@
               <option value="high">A, D, G only</option>
             </select></div>
           <div><span class="lbl">Beats per shape</span>
-            <select id="triadBeats">
-              <option value="3" selected>3 — one per note</option>
-              <option value="4">4</option>
-              <option value="6">6 — up and back down</option>
-            </select></div>
+            <input type="number" id="triadBeats" value="3" min="1" max="12" step="1"></div>
           <div><span class="lbl">Bars per shape</span>
             <select id="triadBars"><option value="1" selected>1 bar</option><option value="2">2 bars</option></select></div>
         </div>
@@ -345,8 +360,9 @@
             <select id="rootCycle">
               <option value="off" selected>Stay in one key</option>
               <option value="semitone">Chromatic — up a semitone</option>
-              <option value="fourths">Circle of fourths \u2014 down a fourth</option>
-              <option value="fifths">Circle of fifths \u2014 up a fifth</option>
+              <option value="fourths">Circle of fourths — down a fourth</option>
+              <option value="fifths">Circle of fifths — up a fifth</option>
+              <option value="naturals">Natural notes — E F G A B C D</option>
             </select>
           </div>
           <div id="cycleWhere"><span class="lbl">Key now</span>
@@ -367,31 +383,49 @@
 
     <div id="fretPanel" style="display:none">
       <div class="panel">
-        <span class="lbl">Circle of fourths</span>
-        <select id="nfOrder" style="max-width:340px;margin-bottom:10px">
-          <option value="fourths" selected>Circle of fourths</option>
-          <option value="fifths">Circle of fifths</option>
-        </select>
-        <select id="nfSet" style="max-width:340px">
-          <option value="all">All twelve, in order</option>
-          <option value="0">Set 1 &mdash; C, F, B&#9837;, E&#9837;</option>
-          <option value="1">Set 2 &mdash; A&#9837;, D&#9837;, G&#9837;, B</option>
-          <option value="2">Set 3 &mdash; E, A, D, G</option>
-        </select>
-        <p class="note">Frets 1&ndash;12, open strings excluded: below the 12th fret each note appears exactly once per string. Work one set until it is automatic before adding the next.</p>
+        <div class="grid2" style="max-width:660px">
+          <div><span class="lbl">Order</span>
+            <select id="nfOrder">
+              <option value="fourths" selected>Circle of fourths</option>
+              <option value="fifths">Circle of fifths</option>
+            </select></div>
+          <div><span class="lbl">Notes</span>
+            <select id="nfSet">
+              <option value="all" selected>All twelve</option>
+              <option value="0">Set 1</option><option value="1">Set 2</option><option value="2">Set 3</option>
+            </select></div>
+          <div><span class="lbl">Beats per note</span>
+            <input type="number" id="nfBeats" value="4" min="1" max="16" step="1"></div>
+        </div>
       </div>
       <div class="panel">
-        <div class="status" id="nfPrompt">Press start</div>
-        <div class="btnrow">
-          <button class="primary" id="nfStart">Start</button>
-          <button id="nfSkip" disabled>Skip</button>
+        <div class="chordnow">
+          <div class="big" id="nfNote">&mdash;</div>
+          <div class="nxt">on the <b id="nfStr">&mdash;</b> string &nbsp; next: <b id="nfNext">&mdash;</b></div>
         </div>
-        <div class="meta">
-          <span>Streak <b id="nfStreak">0</b></span>
-          <span>Found <b id="nfScore">0</b> of <b id="nfTries">0</b></span>
+        <div class="bars" id="nfBars"></div>
+      </div>
+      <div class="boardbox"><div class="board-wrap"><div id="nfBoard"></div></div></div>
+      <div class="panel"><p class="note" id="nfHow"></p></div>
+    </div>
+
+    <div id="scalePanel" style="display:none">
+      <div class="panel">
+        <div class="chordnow">
+          <div class="big" id="scName">&mdash;</div>
+          <div class="nxt">next: <b id="scNext">&mdash;</b></div>
+        </div>
+        <div class="bars" id="scBars"></div>
+        <div class="btnrow">
+          <button id="scHear">Hear it</button>
+          <button id="scRestart">Restart</button>
         </div>
       </div>
-      <div class="board-wrap"><div id="nfBoard"></div></div>
+      <div class="boardbox">
+        <div class="boardbar"><button class="pill" data-plabel>degrees</button></div>
+        <div class="board-wrap"><div id="scaleBoard"></div></div>
+      </div>
+      <div class="panel"><p class="note" id="scHow"></p></div>
     </div>
 
     <div id="triadPanel" style="display:none">
@@ -430,7 +464,12 @@
           <div class="nxt">next: <b id="walkNext">&mdash;</b></div>
         </div>
         <div class="bars" id="walkBars"></div>
-        <div class="btnrow"><button id="walkRestart">Restart from bar 1</button></div>
+        <div class="btnrow">
+          <button id="walkRestart">Restart from bar 1</button>
+          <button id="walkLine">New example line</button>
+          <button id="walkHide">Hide line</button>
+        </div>
+        <div id="walkLineBox"></div>
       </div>
       <div class="boardbox">
         <div class="boardbar"><button class="pill" data-plabel>degrees</button></div>
@@ -539,7 +578,6 @@
           <span>Streak <b id="pStreak">0</b></span>
           <span>Correct <b id="pScore">0</b> of <b id="pTries">0</b></span>
         </div>
-        <p class="note">One octave, C up to B, same register every time. The reference note gives you an anchor — switch it off once you can name them cold.</p>
       </div>
     </div>
 
@@ -636,6 +674,27 @@
     </div>
     <div class="board-wrap"><div id="harmBoard"></div></div>
     <div class="panel">
+      <span class="lbl">Make your own</span>
+      <p class="note" id="makeHelp" style="margin-top:0"></p>
+      <div class="chips" id="makeSeq"></div>
+      <div class="btnrow">
+        <button id="makeUndo">Undo</button>
+        <button id="makeClear">Clear</button>
+        <button id="makeHear">Hear it</button>
+      </div>
+      <div class="grid2" style="max-width:520px;margin-top:12px">
+        <div><span class="lbl">Name</span><input type="text" id="makeName" placeholder="My pattern"
+          style="background:var(--panel-2);color:var(--cream);border:1px solid var(--line);border-radius:3px;
+          padding:11px 10px;font-family:var(--mono);font-size:16px;width:100%;min-height:44px"></div>
+        <div style="display:flex;align-items:flex-end"><button class="primary" id="makeSave"
+          style="width:100%;min-height:44px;border:1px solid var(--tone);background:var(--tone);color:#08201b;
+          border-radius:3px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.18em;font-size:15px;
+          cursor:pointer">Save pattern</button></div>
+      </div>
+      <div class="board-wrap" style="margin-top:12px"><div id="makeBoard"></div></div>
+    </div>
+
+    <div class="panel">
       <span class="lbl">Chime exercises</span>
       <div id="harmEx"></div>
       <p class="note" id="harmNote"></p>
@@ -681,25 +740,14 @@
       <p class="focus" id="sessFocus"></p>
       <ul class="steps" id="sessSteps"></ul>
       <div class="btnrow">
-        <button class="primary" id="planSetup">Set it up</button>
-        <button id="planDone">Got it &mdash; next level</button>
-        <button id="planBack">Back a level</button>
-        <button id="clearTicks">Clear ticks</button>
+        <button class="primary" id="planSetup">Start</button>
+        <button id="planDone">Next</button>
+        <button id="planBack">Previous</button>
       </div>
       <p class="note" id="planNote"></p>
     </div>
 
-    <div class="panel">
-      <span class="lbl">Back up or move your progress</span>
-      <p class="note" style="margin-top:0">Your place on each track lives in this browser at this address — it does not travel with the file. Copy this out to keep it, or paste a backup in to restore it.</p>
-      <textarea id="logData" rows="3" style="width:100%;background:var(--panel-2);color:var(--cream);
-        border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:14px;padding:10px"></textarea>
-      <div class="btnrow">
-        <button id="logExport">Show my data</button>
-        <button id="logImport">Restore from box</button>
-      </div>
-      <p class="note" id="verLine"></p>
-    </div>
+    <p class="note" id="verLine" style="text-align:center"></p>
   </section>
 </div>
 
@@ -860,7 +908,7 @@ const OPENPC=[4,9,2,7]; /* E A D G, index 0 = lowest */
 
 /* ================= state ================= */
 const state={root:'E',shapeKey:'minpent',frets:12,labels:'names',ghosts:false,
-             tab:'plan',form:'open3',mode:'run',ramp:false,pLabels:'degrees'};
+             tab:'plan',form:'close3',mode:'run',ramp:false,pLabels:'degrees'};
 function currentShape(){for(const g in SHAPES)if(SHAPES[g][state.shapeKey])return SHAPES[g][state.shapeKey];}
 function shapeTones(){
   const sh=currentShape(),out=new Map();
@@ -939,7 +987,10 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
   if(state.mode==='walk'){walkBar=0;renderWalkBoard();}
   if(state.mode==='chords'){cBar=0;renderChordMode();}
   $('fretPanel').style.display=state.mode==='fret'?'':'none';
-  if(state.mode==='fret')renderNfBoard();
+  if(state.mode==='fret'){circIdx=0;buildCircle();}
+  $('scalePick').style.display=state.mode==='scale'?'':'none';
+  $('scalePanel').style.display=state.mode==='scale'?'':'none';
+  if(state.mode==='scale'){scIdx=0;renderScaleMode();}
   $('triadPick').style.display=state.mode==='triads'?'':'none';
   $('triadPanel').style.display=state.mode==='triads'?'':'none';
   if(state.mode==='triads'){tIdx=0;buildTriads();}
@@ -1150,7 +1201,7 @@ function buildRun(){
     for(let i=0;i<total;i++)SEQ.push(pts[i]);
     for(let i=total-2;i>=0;i--)SEQ.push(pts[i]);
   });
-  SEQ.push({str:0,fret:r,pos:starts.length});
+  SEQ.push({str:0,fret:r+12,pos:starts.length});   /* close on the octave, not the low root */
   notesPerPos=total*2-1;runPositions=starts.length;
   runFrets=Math.max(12,Math.min(24,Math.max.apply(null,SEQ.map(p=>p.fret))+1));
   LAST_NOTE=SEQ.length-1;
@@ -1194,7 +1245,14 @@ function setRoot(name){
 function advanceKey(){
   const mode=$('rootCycle').value;
   if(mode==='off')return;
-  const names=keyNames(),step=mode==='fourths'?5:mode==='fifths'?7:1;
+  const names=keyNames();
+  if(mode==='naturals'){
+    const nat=[4,5,7,9,11,0,2];                     /* E F G A B C D, in that order */
+    const here=pcOf(state.root),i=nat.indexOf(here);
+    const next=i>=0?nat[(i+1)%nat.length]:(nat.find(x=>x>here)!==undefined?nat.find(x=>x>here):nat[0]);
+    setRoot(names[next]);return;
+  }
+  const step=mode==='fourths'?5:mode==='fifths'?7:1;
   setRoot(names[(pcOf(state.root)+step)%12]);
 }
 $('rootCycle').onchange=()=>{
@@ -1213,6 +1271,7 @@ let nextTime=0,tick=0,cycle=1,bpm=60,phase='play',ciLeft=0;
 function beatsPerBarNow(){
   if(state.mode==='run'||state.mode==='walk'||state.mode==='chords')return 4;
   if(state.mode==='triads')return Math.max(1,+$('triadBeats').value||3);
+  if(state.mode==='scale')return 4;
   return num('beatsPerBar');
 }
 let CYCLE_EIGHTHS=96,LAST_NOTE=75,RING_END=80,REST_AT=80;
@@ -1231,7 +1290,7 @@ function refreshMeta(){
       (reps>1?' (pass '+(atThisTempo+1)+' of '+reps+')':'')
     : 'steady';
   if(state.mode==='fret'){
-    $('runNote').textContent='Circle of fourths or fifths, one note at a time, on every string. Start the metronome if you want to work against a clock \u2014 the drill itself waits for you.';
+    $('runNote').textContent='Every note of the circle on all four strings, '+(+$('nfBeats').value||4)+' beat(s) each.';
   }else if(state.mode==='tap'){
     $('runNote').textContent=tapNow().n+': '+tapNow().seq.length+' notes, one per eighth, looping. The click marks the quarters.';
   }else if(state.mode==='triads'){
@@ -1313,6 +1372,24 @@ function scheduler(){
       if(ciLeft<=0){phase='play';tick=0;}
       continue;
     }
+    if(state.mode==='fret'){
+      const per=Math.max(1,+$('nfBeats').value||4),bpb=4;
+      const len=Math.max(1,CIRCLE.length)*per,e=tick%len,beat=e%bpb,idx=Math.floor(e/per);
+      if(e===0&&tick>0&&!bumpTempo())return;
+      clickSound(nextTime,beat===0);
+      queue.push({t:nextTime,circIdx:idx,beat,accent:beat===0,bar:Math.floor(e/bpb)+1});
+      nextTime+=60/bpm;tick++;
+      continue;
+    }
+    if(state.mode==='scale'){
+      const per=+$('scaleBars').value||2,n=scList().length,len=n*4*per;
+      const e=tick%len,beat=e%4,idx=Math.floor(e/(4*per));
+      if(e===0&&tick>0&&!bumpTempo())return;
+      clickSound(nextTime,beat===0);
+      queue.push({t:nextTime,scaleIdx:idx,beat,accent:beat===0,bar:Math.floor(e/4)+1});
+      nextTime+=60/bpm;tick++;
+      continue;
+    }
     if(state.mode==='triads'){
       const bpb=beatsPerBarNow(),per=+$('triadBars').value||1;
       const len=Math.max(1,TRIADS.length)*bpb*per;
@@ -1373,6 +1450,20 @@ function paint(){
     $('cd').textContent='';
     $('barOut').textContent=q.bar;
     if(q.walkBar!==undefined&&q.walkBar!==walkBar){walkBar=q.walkBar;renderWalkBoard();}
+    if(q.circIdx!==undefined){
+      if(q.circIdx!==circIdx){circIdx=q.circIdx;renderCircle();}
+      $('status').textContent='The Circle';$('status').classList.remove('rest');
+      $('dotLabel').textContent='';$('cd').textContent='';
+      $('posOut').textContent=(q.circIdx+1)+' of '+CIRCLE.length;
+      $('noteOut').textContent='beat '+(q.beat+1);
+    }
+    if(q.scaleIdx!==undefined){
+      if(q.scaleIdx!==scIdx){scIdx=q.scaleIdx;renderScaleMode();}
+      $('status').textContent='Scales';$('status').classList.remove('rest');
+      $('dotLabel').textContent='';$('cd').textContent='';
+      $('posOut').textContent=(q.scaleIdx+1)+' of '+scList().length;
+      $('noteOut').textContent='beat '+(q.beat+1);
+    }
     if(q.triadIdx!==undefined){
       if(q.triadIdx!==tIdx){tIdx=q.triadIdx;renderTriads();}
       $('status').textContent='Triads';$('status').classList.remove('rest');
@@ -1392,10 +1483,13 @@ function paint(){
       $('noteOut').textContent='beat '+(q.beat+1);}
     if(state.mode==='run'){
       if(q.e<=LAST_NOTE){markNote(q.e);$('status').textContent='Playing';$('status').classList.remove('rest');
-        $('dotLabel').textContent='';}
+        $('dotLabel').textContent='';$('cd').textContent='';}
       else if(q.e<RING_END){$('status').textContent='Let it ring';$('status').classList.add('rest');
-        $('dotLabel').textContent='let it ring';}
-      else{$('status').textContent='Rest';$('status').classList.add('rest');$('dotLabel').textContent='rest';
+        $('dotLabel').textContent='let it ring';$('cd').textContent='';}
+      else{$('status').textContent='Rest';$('status').classList.add('rest');
+        const beatsLeft=Math.ceil((CYCLE_EIGHTHS-q.e)/2);
+        $('dotLabel').textContent='rest \u2014 back in';
+        $('cd').textContent=beatsLeft;
         $('posOut').textContent='\u2014';$('noteOut').textContent='\u2014';markNote(-1);}
     }else{$('dotLabel').textContent='';}
     refreshMeta();
@@ -1484,6 +1578,7 @@ document.querySelectorAll('[data-plabel]').forEach(b=>b.onclick=()=>{
   syncLabelBtns();
   if(state.mode==='walk')renderWalkBoard();
   if(state.mode==='triads')renderTriads();
+  if(state.mode==='scale')renderScaleMode();
 });
 syncLabelBtns();
 function restartBars(){
@@ -1493,6 +1588,8 @@ function restartBars(){
   if(wasRunning)start();
 }
 $('walkRestart').onclick=restartBars;
+$('walkLine').onclick=()=>{WALKLINE=makeWalkLine();renderWalkLine();};
+$('walkHide').onclick=()=>{WALKLINE=null;renderWalkLine();};
 $('doneAgain').onclick=()=>{$('donePanel').style.display='none';start();};
 $('doneClose').onclick=()=>{$('donePanel').style.display='none';};
 $('doneNext').onclick=()=>{
@@ -1740,13 +1837,82 @@ const HARM_EX=[
   seq:[[3,2],[3,3],[2,3],[1,3],[0,3],[0,5]]},
  {t:'E pedal, moving voices',d:'Low E between each upper note: B, then F\u266F, then C\u266F. One hand holds the ground while the other moves.',
   seq:[[0,12],[3,4],[0,12],[2,4],[0,12],[1,4]]}];
+
+/* ---- build and keep your own harmonic patterns ---- */
+let MY_HARM=[],makeSeq=[];
+async function loadMyHarm(){
+  try{const v=await store.get('woodshed:harmonics');if(v)MY_HARM=JSON.parse(v)||[];}catch(e){}
+  renderHarmEx();
+}
+async function saveMyHarm(){try{await store.set('woodshed:harmonics',JSON.stringify(MY_HARM));}catch(e){}}
+function renderMake(){
+  $('makeHelp').textContent='Tap the triangles in the order you want to play them. The same node can be used more than once.';
+  $('makeSeq').innerHTML=makeSeq.length
+    ? makeSeq.map((x,i)=>'<span class="ch">'+(i+1)+'. '+HARM_STR[x[0]].n+' '+NODES[x[1]].x.toFixed(2).replace(/\.00$/,'')+
+        ' \u2192 '+hName(harmMidi(x[0],x[1]))+'</span>').join('')
+    : '<span class="empty">Nothing yet \u2014 tap a triangle below.</span>';
+  const keys=[2,3,4,5,7,9,12,16,19];
+  $('makeBoard').innerHTML=neckSvg(20,46,()=>'',(xOf,yOf,bT,bH)=>{
+    let out='';
+    keys.forEach(k=>{
+      const cx=xOf(1)+(nodeX(k)-1)*(xOf(2)-xOf(1));
+      out+='<line x1="'+cx+'" y1="'+bT+'" x2="'+cx+'" y2="'+(bT+bH)+'" stroke="rgba(87,191,166,.28)" stroke-width="1.4" stroke-dasharray="4 4"/>';
+      for(let str=0;str<4;str++){
+        const cy=yOf(3-str),used=makeSeq.map((x,i)=>x[0]===str&&x[1]===k?i+1:0).filter(Boolean);
+        out+='<polygon class="mk" data-str="'+str+'" data-node="'+k+'" points="'+cx+','+(cy-16)+' '+(cx-16)+','+(cy+12)+' '+(cx+16)+','+(cy+12)+'" '+
+          'fill="var(--tone)" opacity="'+(used.length?'1':'.35')+'" style="cursor:pointer"/>';
+        if(used.length)out+='<text x="'+cx+'" y="'+(cy+9)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+
+          (used.join(',').length>1?10:13)+'" fill="#062018" pointer-events="none">'+used.join(',')+'</text>';
+      }
+      out+='<text x="'+cx+'" y="'+(bT+bH+46)+'" text-anchor="middle" fill="var(--tone)" font-family="var(--mono)" font-size="12">'+
+        NODES[k].x.toFixed(2).replace(/\.00$/,'')+'</text>';
+    });
+    return out;
+  });
+}
+$('makeBoard')&&$('makeBoard').addEventListener('click',ev=>{
+  const t=ev.target.closest('polygon.mk');
+  if(!t)return;
+  makeSeq.push([+t.dataset.str,+t.dataset.node]);renderMake();
+});
+$('makeUndo')&&($('makeUndo').onclick=()=>{makeSeq.pop();renderMake();});
+$('makeClear')&&($('makeClear').onclick=()=>{makeSeq=[];renderMake();});
+$('makeHear')&&($('makeHear').onclick=()=>{
+  if(!makeSeq.length)return;
+  playSeqHarm(makeSeq);
+});
+$('makeSave')&&($('makeSave').onclick=async()=>{
+  if(makeSeq.length<2){$('makeHelp').textContent='Add at least two notes before saving.';return;}
+  const name=($('makeName').value||'').trim()||('My pattern '+(MY_HARM.length+1));
+  MY_HARM.push({t:name,d:'Your own pattern.',seq:makeSeq.slice(),mine:1});
+  makeSeq=[];$('makeName').value='';
+  await saveMyHarm();renderMake();renderHarmEx();
+});
+function playSeqHarm(seq){
+  if(!audioReady()){withAudio(()=>playSeqHarm(seq));return;}
+  let t=ctx.currentTime+.1;
+  seq.forEach(([st,fr])=>{
+    const f=440*Math.pow(2,(harmMidi(st,fr)-69)/12);
+    const o=ctx.createOscillator();o.type='sine';o.frequency.value=f;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(.32,t+.01);
+    g.gain.exponentialRampToValueAtTime(.0001,t+1.15);
+    o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+1.2);
+    t+=.62;});
+}
+
+function allHarmEx(){return HARM_EX.concat(MY_HARM);}
 function renderHarmEx(){
-  $('harmEx').innerHTML=HARM_EX.map((e,i)=>{
+  $('harmEx').innerHTML=allHarmEx().map((e,i)=>{
     const notes=e.seq.map(([st,fr])=>hName(harmMidi(st,fr))).join('  \u00b7  ');
-    return '<details class="ex"><summary><b>'+e.t+'</b><span class="seqline">'+notes+'</span></summary>'+
+    return '<details class="ex"><summary><b>'+e.t+(e.mine?' \u2605':'')+'</b><span class="seqline">'+notes+'</span></summary>'+
       '<p>'+e.d+'</p><div class="exboard">'+harmExBoard(e)+'</div>'+
-      '<button data-hex="'+i+'">Hear it</button></details>';}).join('');
+      '<button data-hex="'+i+'">Hear it</button>'+
+      (e.mine?' <button data-hdel="'+(i-HARM_EX.length)+'">Delete</button>':'')+'</details>';}).join('');
   document.querySelectorAll('[data-hex]').forEach(b=>b.onclick=ev=>{ev.preventDefault();playHarmEx(+b.dataset.hex);});
+  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=async ev=>{
+    ev.preventDefault();MY_HARM.splice(+b.dataset.hdel,1);await saveMyHarm();renderHarmEx();});
 }
 function harmExBoard(e){
   const order=new Map();
@@ -1767,9 +1933,10 @@ function harmExBoard(e){
   });
 }
 function playHarmEx(i){
+  const e=allHarmEx()[i];if(!e)return;
   if(!audioReady()){withAudio(()=>playHarmEx(i));return;}
   let t=ctx.currentTime+.1;
-  HARM_EX[i].seq.forEach(([st,fr])=>{
+  e.seq.forEach(([st,fr])=>{
     const f=440*Math.pow(2,(harmMidi(st,fr)-69)/12);
     const o=ctx.createOscillator();o.type='sine';o.frequency.value=f;
     const g=ctx.createGain();
@@ -1782,6 +1949,16 @@ function playHarmEx(i){
 
 /* ================= walking bass ================= */
 const CH={maj7:[0,4,7,11],min7:[0,3,7,10],dom7:[0,4,7,10],m7b5:[0,3,6,10]};
+/* A 12-bar jazz blues in any key, built from the degrees rather than typed out twice */
+const FLATNAME=['C','D\u266D','D','E\u266D','E','F','G\u266D','G','A\u266D','A','B\u266D','B'];
+function bluesIn(rootPc){
+  const N=x=>FLATNAME[(rootPc+x)%12];
+  return {n:'Jazz blues in '+N(0)+' \u2014 12 bars',
+    bars:[[N(0),'dom7'],[N(5),'dom7'],[N(0),'dom7'],[N(7),'min7'],
+          [N(5),'dom7'],[N(5),'dom7'],[N(0),'dom7'],[N(9),'dom7'],
+          [N(2),'min7'],[N(7),'dom7'],[N(0),'dom7'],[N(7),'dom7']]};
+}
+function bluesKeys(){return [10,5,3,8,0,7,2,4].map(bluesIn);}   /* B♭ F E♭ A♭ C G D E */
 const PROGS=[
  {n:'Blues in F \u2014 12 bars',bars:[['F','dom7'],['F','dom7'],['F','dom7'],['F','dom7'],
    ['B\u266D','dom7'],['B\u266D','dom7'],['F','dom7'],['F','dom7'],
@@ -1790,9 +1967,7 @@ const PROGS=[
  {n:'I \u2013 vi \u2013 ii \u2013 V in C',bars:[['C','maj7'],['A','min7'],['D','min7'],['G','dom7']]},
  {n:'Autumn-style cycle in G',bars:[['A','min7'],['D','dom7'],['G','maj7'],['C','maj7'],
    ['F\u266F','m7b5'],['B','dom7'],['E','min7'],['E','min7']]},
- {n:'Jazz blues in B\u266D \u2014 12 bars',bars:[['B\u266D','dom7'],['E\u266D','dom7'],['B\u266D','dom7'],['F','min7'],
-   ['E\u266D','dom7'],['E\u266D','dom7'],['B\u266D','dom7'],['G','dom7'],
-   ['C','min7'],['F','dom7'],['B\u266D','dom7'],['F','dom7']]},
+ ...bluesKeys(),
  {n:'Minor blues in C \u2014 12 bars',bars:[['C','min7'],['C','min7'],['C','min7'],['C','min7'],
    ['F','min7'],['F','min7'],['C','min7'],['C','min7'],
    ['A\u266D','maj7'],['G','dom7'],['C','min7'],['G','dom7']]},
@@ -1800,7 +1975,48 @@ const PROGS=[
    ['B\u266D','maj7'],['G','min7'],['C','min7'],['F','dom7']]},
  {n:'ii\u2013V chain, down in tones',bars:[['D','min7'],['G','dom7'],['C','maj7'],['C','maj7'],
    ['C','min7'],['F','dom7'],['B\u266D','maj7'],['B\u266D','maj7']]}];
-let walkBar=0;
+let walkBar=0,WALKLINE=null;
+/* Builds a playable walking line for the whole progression: root on 1, chord tones
+   through the bar, and a step into the next root on 4. Different every time. */
+function makeWalkLine(){
+  const pr=progNow(),out=[];
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const near=(pc,fromMidi)=>{                       /* nearest playable spot to where we are */
+    let best=null;
+    for(let str=0;str<4;str++)for(let f=0;f<=12;f++){
+      const m=OPENMIDI_R[str]+f;
+      if(m%12!==pc)continue;
+      if(m<33||m>57)continue;                       /* keep it in a bassist's register */
+      const d=Math.abs(m-fromMidi);
+      if(!best||d<best.d)best={str,fret:f,midi:m,d};
+    }
+    return best;
+  };
+  let last=40;
+  pr.bars.forEach((b,i)=>{
+    const rootPc=pcOf(b[0]),tones=CH[b[1]].map(x=>(rootPc+x)%12);
+    const nextBar=pr.bars[(i+1)%pr.bars.length],nextPc=pcOf(nextBar[0]);
+    const beats=[];
+    const r=near(rootPc,last);beats.push(r);last=r.midi;
+    const mid=pick([[tones[2],tones[1]],[tones[1],tones[2]],[tones[2],tones[3]!==undefined?tones[3]:tones[0]]]);
+    mid.forEach(pc=>{const n=near(pc,last);beats.push(n);last=n.midi;});
+    const approach=pick([(nextPc+11)%12,(nextPc+1)%12,(nextPc+7)%12]);  /* half step either side, or the fifth */
+    const a=near(approach,last);beats.push(a);last=a.midi;
+    out.push(beats);
+  });
+  return out;
+}
+function renderWalkLine(){
+  const box=$('walkLineBox');
+  if(!WALKLINE){box.innerHTML='';return;}
+  const pr=progNow();
+  box.innerHTML='<div class="lineGrid">'+pr.bars.map((b,i)=>{
+    const beats=WALKLINE[i]||[];
+    return '<div class="lineBar'+(i===walkBar?' on':'')+'"><div class="lineCh">'+b[0]+chordSuffix(b[1])+'</div>'+
+      beats.map(n=>'<div class="lineNote"><b>'+FLATNAME[(OPENPC[n.str]+n.fret)%12]+'</b>'+
+        '<span>'+['E','A','D','G'][n.str]+' '+n.fret+'</span></div>').join('')+'</div>';
+  }).join('')+'</div>';
+}
 function progNow(){return PROGS[+$('walkProg').value]||PROGS[0];}
 function renderWalkBars(){
   const pr=progNow();
@@ -1826,7 +2042,7 @@ function renderWalkBoard(){
   $('walkBoard').innerHTML=html;
   $('walkChord').textContent=cur[0]+chordSuffix(cur[1]);
   $('walkNext').textContent=nxt[0]+chordSuffix(nxt[1]);
-  renderWalkBars();
+  renderWalkBars();renderWalkLine();
   $('walkHow').textContent='Filled circles are this bar\u2019s chord tones, labelled by degree; the white rings are the root of the next chord \u2014 that is where bar\u2019s end is heading. Four quarter notes to a bar: land the root on beat 1, chord tones on 2 and 3 (the 3rd and 7th are what name the chord), and on beat 4 play a note a half step or a scale step away from the next root so beat 1 arrives on its own. Keep the line stepping; save leaps for when you need to reset your register.';
 }
 
@@ -1900,6 +2116,72 @@ function playTap(i){
   const t=TAPS[i],step=.34;let x=ctx.currentTime+.1;
   t.seq.forEach(n=>{pluck(OPENMIDI_R[n[0]]+n[1]+(n[3]===1?12:0),x,step*1.8);x+=step;});
 }
+
+
+/* ---- scales: one octave from the root, one scale type per turn ---- */
+const SCALE_WALK=[
+ {k:'major',n:'Major'},{k:'natmin',n:'Natural minor'},{k:'dorian',n:'Dorian'},
+ {k:'mixo',n:'Mixolydian'},{k:'majpent',n:'Major pentatonic'},{k:'minpent',n:'Minor pentatonic'},
+ {k:'blues',n:'Blues'},{k:'harmmin',n:'Harmonic minor'},{k:'lydian',n:'Lydian'},{k:'phrygian',n:'Phrygian'}];
+const MODE_WALK=[{k:'major',n:'Ionian'},{k:'dorian',n:'Dorian'},{k:'phrygian',n:'Phrygian'},
+ {k:'lydian',n:'Lydian'},{k:'mixo',n:'Mixolydian'},{k:'natmin',n:'Aeolian'},{k:'locrian',n:'Locrian'}];
+let scIdx=0;
+function scList(){return $('scaleSet').value==='modes'?MODE_WALK:SCALE_WALK;}
+function scShape(i){
+  const key=scList()[i].k;
+  for(const g in SHAPES)if(SHAPES[g][key])return SHAPES[g][key];
+}
+function scRoot(i){
+  /* modes walk the degrees of one key; scale types all start on the same root */
+  if($('scaleSet').value!=='modes')return pcOf(state.root);
+  const maj=SHAPES.Scales.major.s;
+  return (pcOf(state.root)+maj[i%7])%12;
+}
+function scOctave(i){
+  const sh=scShape(i),rootPc=scRoot(i);
+  const pcs=new Set(sh.s.map(x=>(rootPc+x)%12));
+  const r=((rootPc-4)%12+12)%12;
+  const next=m=>{let x=m+1;while(!pcs.has(((x%12)+12)%12))x++;return x;};
+  const pts=[];let str=0,onStr=0,m=28+r,per=sh.s.length<=5?2:3;
+  while(pts.length<sh.s.length+1){
+    while(str<3&&onStr>=per&&m>=OPENMIDI_R[str+1]){str++;onStr=0;}
+    pts.push({str,fret:m-OPENMIDI_R[str]});onStr++;m=next(m);
+  }
+  return pts;
+}
+function renderScaleMode(){
+  const list=scList(),i=scIdx%list.length,sh=scShape(i),rootPc=scRoot(i);
+  const pts=scOctave(i),order=new Map();
+  pts.forEach((p,k)=>order.set(p.str+':'+p.fret,k+1));
+  const degs=new Map();sh.s.forEach((x,k)=>degs.set((rootPc+x)%12,sh.i[k]));
+  const name=SHARPNAMES[rootPc]+' '+list[i].n;
+  $('scName').textContent=name;
+  $('scNext').textContent=SHARPNAMES[scRoot((i+1)%list.length)]+' '+list[(i+1)%list.length].n;
+  $('scBars').innerHTML=list.map((x,k)=>'<div class="barcell'+(k===i?' on':'')+'">'+x.n.split(' ')[0]+'</div>').join('');
+  const top=Math.max(...pts.map(p=>p.fret));
+  $('scaleBoard').innerHTML=neckSvg(Math.min(20,Math.max(14,top+2)),44,(row,f,cx,cy)=>{
+    const str=3-row,pc=(OPEN[row].pc+f)%12,n=order.get(str+':'+f);
+    if(!n)return '';
+    const deg=degs.get(pc),isRoot=deg==='R';
+    const lab=state.pLabels==='names'?SHARPNAMES[pc]:deg;
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="14" fill="'+(isRoot?'var(--root)':'var(--tone)')+'" stroke="rgba(0,0,0,.35)"/>'+
+      '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+
+      (lab.length>1?10:12)+'" fill="'+(isRoot?'#180c07':'#062018')+'">'+lab+'</text>';
+  });
+  $('scHow').textContent='One octave, root to root, from the lowest root on the E string. '+
+    (sh.s.length+1)+' notes: '+pts.map(p=>SHARPNAMES[(OPENPC[p.str]+p.fret)%12]).join(' ')+'.';
+}
+function playScale(){
+  if(!audioReady()){withAudio(playScale);return;}
+  const pts=scOctave(scIdx%scList().length),step=.3;let t=ctx.currentTime+.1;
+  pts.forEach(p=>{pluck(OPENMIDI_R[p.str]+p.fret,t,step*1.6);t+=step;});
+  [...pts].reverse().slice(1).forEach(p=>{pluck(OPENMIDI_R[p.str]+p.fret,t,step*1.6);t+=step;});
+}
+$('scaleSet')&&(function(){
+  ['scaleSet','scaleBars'].forEach(id=>$(id).onchange=()=>{stop();scIdx=0;renderScaleMode();drawBeats();refreshMeta();});
+  $('scHear').onclick=playScale;
+  $('scRestart').onclick=()=>{const r=running;stop();scIdx=0;renderScaleMode();if(r)start();};
+})();
 
 /* ---- triads: three notes, one per string, every inversion up the neck ---- */
 const TRIAD_TYPES={maj:{n:'Major',s:[0,4,7]},min:{n:'Minor',s:[0,3,7]},
@@ -1977,9 +2259,7 @@ const CHORD_PROGS=[
    ['C','dom7'],['B\u266D','dom7'],['F','dom7'],['C','dom7']]},
  {n:'Autumn-style cycle in G',bars:[['A','min7'],['D','dom7'],['G','maj7'],['C','maj7'],
    ['F\u266F','m7b5'],['B','dom7'],['E','min7'],['E','min7']]},
- {n:'Jazz blues in B\u266D \u2014 12 bars',bars:[['B\u266D','dom7'],['E\u266D','dom7'],['B\u266D','dom7'],['F','min7'],
-   ['E\u266D','dom7'],['E\u266D','dom7'],['B\u266D','dom7'],['G','dom7'],
-   ['C','min7'],['F','dom7'],['B\u266D','dom7'],['F','dom7']]},
+ ...bluesKeys(),
  {n:'Minor blues in C \u2014 12 bars',bars:[['C','min7'],['C','min7'],['C','min7'],['C','min7'],
    ['F','min7'],['F','min7'],['C','min7'],['C','min7'],
    ['A\u266D','maj7'],['G','dom7'],['C','min7'],['G','dom7']]},
@@ -2011,167 +2291,52 @@ function renderChordMode(){
 }
 $('walkProg')&&(function(){
   $('walkProg').innerHTML=PROGS.map((p,i)=>'<option value="'+i+'">'+p.n+'</option>').join('');
-  $('walkProg').onchange=()=>{stop();walkBar=0;renderWalkBoard();};
+  $('walkProg').onchange=()=>{stop();walkBar=0;WALKLINE=null;renderWalkBoard();};
 })();
 
-/* ================= note finder =================
-   The circle of fourths, one note at a time, across all four strings.
-   Frets 1-12 only: below the 12th fret each note sits exactly once per string. */
+/* ================= the circle =================
+   Every note of the circle, found on all four strings in turn, frets 1-12.
+   The neck lights the note you are on and shows where the rest of them sit. */
 const FOURTHS=['C','F','B\u266D','E\u266D','A\u266D','D\u266D','G\u266D','B','E','A','D','G'];
 const STR_NAME=['E','A','D','G'];
-let nfList=[],nfI=0,nfStr=0,nfOn=false,nfStreak=0,nfScore=0,nfTries=0,nfWrong=null;
-function nfTarget(){return {note:nfList[nfI],str:nfStr};}
-function nfFret(){return ((pcOf(nfList[nfI])-OPENPC[nfStr])%12+12)%12||12;}
-function renderNfBoard(){
-  const html=neckSvg(12,48,(row,f,cx,cy)=>{
-    if(f===0)return '';
-    const str=3-row;
-    const isW=nfWrong&&nfWrong.str===str&&nfWrong.fret===f;
-    const isA=nfWrong===false&&nfOn&&str===nfStr&&f===nfFret();
-    return '<circle class="gt" data-str="'+str+'" data-fret="'+f+'" cx="'+cx+'" cy="'+cy+'" r="16" fill="'+
-      (isA?'var(--tone)':isW?'var(--root)':'rgba(255,255,255,.045)')+'" stroke="rgba(255,255,255,.10)"/>';
-  });
-  $('nfBoard').innerHTML=html;
-}
-function nfNext(){
-  nfWrong=null;nfStr++;
-  if(nfStr>3){nfStr=0;nfI=(nfI+1)%nfList.length;}
-  $('nfPrompt').textContent='Find '+nfList[nfI]+' on the '+STR_NAME[nfStr]+' string';
-  $('nfPrompt').classList.remove('rest');
-  renderNfBoard();
-}
-function nfBegin(){
+let CIRCLE=[],circIdx=0;
+function buildCircle(){
   const v=$('nfSet').value;
   const order=$('nfOrder').value==='fifths'?FOURTHS.slice().reverse():FOURTHS.slice();
-  nfList=v==='all'?order:order.slice(+v*4,+v*4+4);
-  nfI=0;nfStr=-1;nfOn=true;$('nfSkip').disabled=false;$('nfStart').textContent='Restart';
-  nfNext();
+  const list=v==='all'?order:order.slice(+v*4,+v*4+4);
+  CIRCLE=[];
+  list.forEach(nm=>{
+    const pc=pcOf(nm);
+    for(let str=0;str<4;str++){
+      const fret=((pc-OPENPC[str])%12+12)%12||12;      /* frets 1-12, no open strings */
+      CIRCLE.push({nm,pc,str,fret});
+    }
+  });
+  if(circIdx>=CIRCLE.length)circIdx=0;
+  renderCircle();
 }
-$('nfStart').onclick=nfBegin;
-$('nfSkip').onclick=()=>{if(nfOn){nfStreak=0;$('nfStreak').textContent=0;nfNext();}};
-$('nfSet').onchange=()=>{if(nfOn)nfBegin();};
-$('nfOrder').onchange=()=>{if(nfOn)nfBegin();};
-$('nfBoard').addEventListener('click',ev=>{
-  const t=ev.target.closest('circle.gt');
-  if(!t||!nfOn)return;
-  const str=+t.dataset.str,fret=+t.dataset.fret;
-  nfTries++;
-  if(str===nfStr&&fret===nfFret()){
-    nfScore++;nfStreak++;nfWrong=false;
-    $('nfPrompt').textContent=nfList[nfI]+' \u2014 '+STR_NAME[nfStr]+' string, fret '+fret;
-    renderNfBoard();setTimeout(()=>{if(nfOn)nfNext();},550);
-  }else{
-    nfStreak=0;nfWrong={str,fret};
-    $('nfPrompt').textContent='That is '+SHARPNAMES[(OPENPC[str]+fret)%12]+' \u2014 try again';
-    $('nfPrompt').classList.add('rest');renderNfBoard();
-  }
-  $('nfStreak').textContent=nfStreak;$('nfScore').textContent=nfScore;$('nfTries').textContent=nfTries;
-});
-
-/* ================= pitch drill: name the note =================
-   One octave, same register every time, so you are learning the sound of C
-   rather than the sound of an interval from wherever the last note happened to be. */
-const PITCH_BASE=48;                    /* C3 up to B3 */
-let pTarget=-1,pRef=true,pStreak=0,pScore=0,pTries=0,pAnswered=false;
-function pRender(){
-  $('pAnswers').innerHTML=SHARPNAMES.map((n,i)=>
-    '<button data-pnote="'+i+'"'+(pTarget<0?' disabled':'')+'>'+n+'</button>').join('');
-  document.querySelectorAll('[data-pnote]').forEach(b=>b.onclick=()=>pGuess(+b.dataset.pnote));
+function renderCircle(){
+  const cur=CIRCLE[circIdx],nxt=CIRCLE[(circIdx+1)%CIRCLE.length];
+  if(!cur)return;
+  const sameNote=CIRCLE.filter(x=>x.nm===cur.nm);
+  $('nfNote').textContent=cur.nm;
+  $('nfStr').textContent=STR_NAME[cur.str];
+  $('nfNext').textContent=nxt.nm+' on '+STR_NAME[nxt.str];
+  $('nfBars').innerHTML=sameNote.map((x,i)=>
+    '<div class="barcell'+(x.str===cur.str?' on':'')+'">'+STR_NAME[x.str]+' '+x.fret+'</div>').join('');
+  $('nfBoard').innerHTML=neckSvg(12,48,(row,f,cx,cy)=>{
+    const str=3-row;
+    const here=sameNote.find(x=>x.str===str&&x.fret===f);
+    if(!here)return '';
+    const isCur=str===cur.str&&f===cur.fret;
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="'+(isCur?16:13)+'" fill="'+
+      (isCur?'var(--root)':'rgba(87,191,166,.22)')+'"'+(isCur?' stroke="#fff" stroke-width="2.5"':'')+'/>'+
+      '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+
+      (cur.nm.length>1?10:12)+'" fill="'+(isCur?'#180c07':'rgba(236,229,214,.6)')+'">'+cur.nm+'</text>';
+  });
+  $('nfHow').textContent='Each note of the circle on all four strings, low to high. Frets 1 to 12, so every note appears exactly once per string.';
 }
-function pPlayNote(){
-  if(!audioReady()){withAudio(pPlayNote);return;}
-  let t=ctx.currentTime+.1;
-  if(pRef){pluck(PITCH_BASE,t,1.1);t+=.85;}
-  pluck(PITCH_BASE+pTarget,t,1.4);
-}
-function pNew(){
-  pTarget=Math.floor(Math.random()*12);pAnswered=false;
-  $('pStatus').textContent='Listening \u2014 which note?';$('pStatus').classList.remove('rest');
-  pRender();pPlayNote();
-  $('pPlay').disabled=false;
-}
-function pGuess(i){
-  if(pTarget<0||pAnswered)return;
-  pAnswered=true;pTries++;
-  const right=i===pTarget;
-  if(right){pScore++;pStreak++;$('pStatus').textContent='Yes \u2014 '+SHARPNAMES[pTarget];$('pStatus').classList.remove('rest');}
-  else{pStreak=0;$('pStatus').textContent='That was '+SHARPNAMES[pTarget]+', you picked '+SHARPNAMES[i];
-    $('pStatus').classList.add('rest');}
-  document.querySelectorAll('[data-pnote]').forEach(b=>{
-    const k=+b.dataset.pnote;
-    if(k===pTarget)b.classList.add('right');
-    else if(k===i)b.classList.add('wrong');
-    b.disabled=true;});
-  $('pStreak').textContent=pStreak;$('pScore').textContent=pScore;$('pTries').textContent=pTries;
-  setTimeout(()=>{if(pAnswered)pNew();},1400);
-}
-$('pNew').onclick=pNew;
-$('pPlay').onclick=pPlayNote;
-$('pRef').onclick=()=>{pRef=!pRef;$('pRef').setAttribute('aria-pressed',pRef);};
-pRender();
-
-/* ================= interval drill ================= */
-const IVLS=[[1,'Minor 2nd'],[2,'Major 2nd'],[3,'Minor 3rd'],[4,'Major 3rd'],[5,'Perfect 4th'],
-            [6,'Tritone'],[7,'Perfect 5th'],[8,'Minor 6th'],[9,'Major 6th'],[10,'Minor 7th'],
-            [11,'Major 7th'],[12,'Octave']];
-const COMMON=[3,4,5,7,12];
-let iTarget=null,iStreak=0,iScore=0,iTries=0,iAnswered=false;
-function iPool(){return $('iSet').value==='common'?IVLS.filter(x=>COMMON.includes(x[0])):IVLS;}
-function iRender(){
-  $('iAnswers').innerHTML=iPool().map(x=>
-    '<button data-ivl="'+x[0]+'"'+(iTarget?'':' disabled')+'>'+x[1]+'</button>').join('');
-  document.querySelectorAll('[data-ivl]').forEach(b=>b.onclick=()=>iGuess(+b.dataset.ivl));
-}
-function iPlay(slow){
-  if(!audioReady()){withAudio(()=>iPlay(slow));return;}
-  if(!iTarget)return;
-  const gap=slow?1.2:.6;
-  let t=ctx.currentTime+.1;
-  pluck(iTarget.low,t,gap*1.5);
-  pluck(iTarget.high,t+gap,1.5);
-}
-function iNew(){
-  const pool=iPool(),pick=pool[Math.floor(Math.random()*pool.length)][0];
-  const dir=$('iDir').value==='both'?(Math.random()<.5?'up':'down'):$('iDir').value;
-  const base=40+Math.floor(Math.random()*8);          /* E2 upward, comfortable range */
-  iTarget=dir==='up'?{semis:pick,low:base,high:base+pick,dir:'up'}
-                    :{semis:pick,low:base+pick,high:base,dir:'down'};
-  iAnswered=false;
-  $('iStatus').textContent='Listening \u2014 '+(dir==='up'?'ascending':'descending');
-  $('iStatus').classList.remove('rest');
-  iRender();iPlay(false);
-  $('iPlay').disabled=false;$('iSlow').disabled=false;
-}
-function iGuess(v){
-  if(!iTarget||iAnswered)return;
-  iAnswered=true;iTries++;
-  const name=IVLS.find(x=>x[0]===iTarget.semis)[1];
-  if(v===iTarget.semis){iScore++;iStreak++;$('iStatus').textContent='Yes \u2014 '+name;$('iStatus').classList.remove('rest');}
-  else{iStreak=0;$('iStatus').textContent='That was a '+name.toLowerCase();$('iStatus').classList.add('rest');}
-  document.querySelectorAll('[data-ivl]').forEach(b=>{
-    const k=+b.dataset.ivl;
-    if(k===iTarget.semis)b.classList.add('right');
-    else if(k===v)b.classList.add('wrong');
-    b.disabled=true;});
-  $('iStreak').textContent=iStreak;$('iScore').textContent=iScore;$('iTries').textContent=iTries;
-  setTimeout(()=>{if(iAnswered)iNew();},1500);
-}
-$('iNew').onclick=iNew;
-$('iPlay').onclick=()=>iPlay(false);
-$('iSlow').onclick=()=>iPlay(true);
-$('iSet').onchange=()=>{iTarget=null;iRender();$('iStatus').textContent='Press play and name the distance.';};
-$('iDir').onchange=()=>{};
-iRender();
-
-document.querySelectorAll('[data-drill]').forEach(b=>b.onclick=()=>{
-  const d=b.dataset.drill;
-  document.querySelectorAll('[data-drill]').forEach(x=>x.setAttribute('aria-pressed',x===b));
-  $('pitchDrill').style.display=d==='pitch'?'':'none';
-  $('ivlDrill').style.display=d==='ivl'?'':'none';
-  $('earDrill').style.display=d==='ear'?'':'none';
-
-});
-$('earDrill').style.display='none';
+['nfSet','nfOrder','nfBeats'].forEach(id=>$(id)&&($(id).onchange=()=>{stop();circIdx=0;buildCircle();drawBeats();refreshMeta();}));
 
 /* ================= practice plan ================= */
 const PLAN={
@@ -2335,7 +2500,7 @@ const PLAN={
           [5,'The long cycle','Autumn-style changes, eight chords.',
      {mode:'chords',prog:4,bpm:75,min:5}]]}]}};
 
-const WOODSHED_VERSION='1.2 build ai';   /* plain ASCII: this string gets compared against the file on the server */
+const WOODSHED_VERSION='1.2 build ap';   /* plain ASCII: this string gets compared against the file on the server */
 const decodeEsc=t=>t.replace(/\\u([0-9a-fA-F]{4})/g,(m,h)=>String.fromCharCode(parseInt(h,16)));
 const prettyVersion=v=>'Woodshed '+v.replace(' build',' \u00b7 build');
 /* Safari and home-screen web apps hold on to the copy they first loaded. So ask the
@@ -2386,15 +2551,6 @@ async function planLoad(){
   renderPlan();
 }
 async function planSave(){try{await store.set('woodshed:plan',JSON.stringify(planState));}catch(e){}}
-$('logExport').onclick=()=>{$('logData').value=JSON.stringify(planState);$('logData').select();};
-$('logImport').onclick=()=>{
-  try{
-    const v=JSON.parse($('logData').value);
-    if(typeof v.left!=='number'||typeof v.right!=='number')throw new Error('not a Woodshed backup');
-    planState=Object.assign({left:0,right:0,track:'left',done:{left:0,right:0},checks:{}},v);
-    planSave();renderPlan();$('planNote').textContent='Progress restored.';
-  }catch(e){$('planNote').textContent='That did not look like a Woodshed backup \u2014 nothing changed.';}
-};
 function renderPlan(){
   const tr=planState.track,track=PLAN[tr],i=Math.min(planState[tr],track.levels.length-1);
   const lv=track.levels[i];
@@ -2424,14 +2580,12 @@ function renderPlan(){
     setTick(cb.dataset.tick,cb.checked);});
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{
     const [lv,k]=b.dataset.go.split(':').map(Number);launchStep(planState.track,lv,k);});
-  $('planNote').textContent=(planState.done[tr]?'Sessions completed on this track: '+planState.done[tr]+'. ':'')+
-    'Times are a guide \u2014 the target inside each step matters more than the clock. If a step is easy, you are ready for the next level.';
+  $('planNote').textContent='';
   $('planSaved').textContent=
     store.kind==='browser'?'Saved in this browser on this device. Open the same link in the same browser and your place will be here.'
     :store.kind==='artifact'?'Saved inside this preview. To keep progress on your own device, open the app from a web address instead \u2014 and use the backup box below to carry your data across.'
     :'Progress is not saving in this window \u2014 note your level before you close it.';
-  $('verLine').textContent=prettyVersion(WOODSHED_VERSION)+
-    ' \u2014 the build letter changes with every workshop tweak; the version number will not move until the tool settles.';
+  $('verLine').textContent=prettyVersion(WOODSHED_VERSION);
 }
 document.querySelectorAll('[data-track]').forEach(b=>b.onclick=()=>{
   planState.track=b.dataset.track;renderPlan();planSave();});
@@ -2439,11 +2593,6 @@ function setTick(key,on){
   if(on)planState.checks[key]=1; else delete planState.checks[key];
   planSave();renderPlan();
 }
-$('clearTicks').onclick=()=>{
-  const pre=planState.track+':'+planState[planState.track]+':';
-  Object.keys(planState.checks).forEach(k=>{if(k.indexOf(pre)===0)delete planState.checks[k];});
-  planSave();renderPlan();
-};
 $('planDone').onclick=()=>{
   const tr=planState.track;
   planState.done[tr]=(planState.done[tr]||0)+1;
@@ -2504,7 +2653,7 @@ planLoad();
 document.getElementById('sndBtn').onclick=unlockAudio;audioBadge();
 $('chordProg').innerHTML=CHORD_PROGS.map((p,i)=>'<option value="'+i+'">'+p.n+'</option>').join('');
 ['chordProg','chordVoice','chordBars'].forEach(id=>$(id).onchange=()=>{stop();cBar=0;renderChordMode();refreshMeta();});
-renderChordMode();buildTriads();renderTapList();
+renderChordMode();buildTriads();renderTapList();renderScaleMode();buildCircle();renderMake();loadMyHarm();
 renderRoots();$('cycleWhere').style.display='none';$('keyNow').textContent=state.root;
 syncToggles();syncRamp();drawBeats();render();renderGrips();buildRun();renderHarm();refreshMeta();
 </script>
