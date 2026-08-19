@@ -297,6 +297,7 @@
         <button class="pill" data-mode="chords" aria-pressed="false">Chord changes</button>
         <button class="pill" data-mode="triads" aria-pressed="false">Triads</button>
         <button class="pill" data-mode="tap" aria-pressed="false">Tapping</button>
+        <button class="pill" data-mode="fret" aria-pressed="false">Fretboard</button>
       </div>
       <div id="walkPick" style="margin-top:12px;max-width:340px;display:none">
         <span class="lbl">Progression</span>
@@ -367,6 +368,35 @@
     </div>
 
     <div id="runBoardWrap" class="board-wrap"><div id="runBoard"></div></div>
+
+    <div id="fretPanel" style="display:none">
+      <div class="panel">
+        <span class="lbl">Circle of fourths</span>
+        <select id="nfOrder" style="max-width:340px;margin-bottom:10px">
+          <option value="fourths" selected>Circle of fourths</option>
+          <option value="fifths">Circle of fifths</option>
+        </select>
+        <select id="nfSet" style="max-width:340px">
+          <option value="all">All twelve, in order</option>
+          <option value="0">Set 1 &mdash; C, F, B&#9837;, E&#9837;</option>
+          <option value="1">Set 2 &mdash; A&#9837;, D&#9837;, G&#9837;, B</option>
+          <option value="2">Set 3 &mdash; E, A, D, G</option>
+        </select>
+        <p class="note">Frets 1&ndash;12, open strings excluded: below the 12th fret each note appears exactly once per string. Work one set until it is automatic before adding the next.</p>
+      </div>
+      <div class="panel">
+        <div class="status" id="nfPrompt">Press start</div>
+        <div class="btnrow">
+          <button class="primary" id="nfStart">Start</button>
+          <button id="nfSkip" disabled>Skip</button>
+        </div>
+        <div class="meta">
+          <span>Streak <b id="nfStreak">0</b></span>
+          <span>Found <b id="nfScore">0</b> of <b id="nfTries">0</b></span>
+        </div>
+      </div>
+      <div class="board-wrap"><div id="nfBoard"></div></div>
+    </div>
 
     <div id="tapPanel" style="display:none">
       <div class="panel">
@@ -507,7 +537,6 @@
         <button class="pill" data-drill="pitch" aria-pressed="true">Note</button>
         <button class="pill" data-drill="ivl" aria-pressed="false">Intervals</button>
         <button class="pill" data-drill="ear" aria-pressed="false">Echo</button>
-        <button class="pill" data-drill="notes" aria-pressed="false">Fretboard</button>
       </div>
     </div>
 
@@ -557,35 +586,6 @@
           <span>Correct <b id="iScore">0</b> of <b id="iTries">0</b></span>
         </div>
       </div>
-    </div>
-
-    <div id="notesDrill" style="display:none">
-      <div class="panel">
-        <span class="lbl">Circle of fourths</span>
-        <select id="nfOrder" style="max-width:340px;margin-bottom:10px">
-          <option value="fourths" selected>Circle of fourths</option>
-          <option value="fifths">Circle of fifths</option>
-        </select>
-        <select id="nfSet" style="max-width:340px">
-          <option value="all">All twelve, in order</option>
-          <option value="0">Set 1 &mdash; C, F, B&#9837;, E&#9837;</option>
-          <option value="1">Set 2 &mdash; A&#9837;, D&#9837;, G&#9837;, B</option>
-          <option value="2">Set 3 &mdash; E, A, D, G</option>
-        </select>
-        <p class="note">Frets 1&ndash;12, open strings excluded: below the 12th fret each note appears exactly once per string. Work one set until it is automatic before adding the next.</p>
-      </div>
-      <div class="panel">
-        <div class="status" id="nfPrompt">Press start</div>
-        <div class="btnrow">
-          <button class="primary" id="nfStart">Start</button>
-          <button id="nfSkip" disabled>Skip</button>
-        </div>
-        <div class="meta">
-          <span>Streak <b id="nfStreak">0</b></span>
-          <span>Found <b id="nfScore">0</b> of <b id="nfTries">0</b></span>
-        </div>
-      </div>
-      <div class="board-wrap"><div id="nfBoard"></div></div>
     </div>
 
     <div id="earDrill">
@@ -939,6 +939,8 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
   $('runBoardWrap').style.display=state.mode==='run'?'':'none';
   if(state.mode==='walk'){walkBar=0;renderWalkBoard();}
   if(state.mode==='chords'){cBar=0;renderChordMode();}
+  $('fretPanel').style.display=state.mode==='fret'?'':'none';
+  if(state.mode==='fret')renderNfBoard();
   $('tapPick').style.display=state.mode==='tap'?'':'none';
   $('tapPanel').style.display=state.mode==='tap'?'':'none';
   if(state.mode==='tap'){tapStep=-1;renderTap();}
@@ -1232,7 +1234,9 @@ function refreshMeta(){
     ? Math.round(Math.min(bpm+(+$('stepBpm').value||0),+$('maxBpm').value||bpm))+
       (reps>1?' (pass '+(atThisTempo+1)+' of '+reps+')':'')
     : 'steady';
-  if(state.mode==='tap'){
+  if(state.mode==='fret'){
+    $('runNote').textContent='Circle of fourths or fifths, one note at a time, on every string. Start the metronome if you want to work against a clock \u2014 the drill itself waits for you.';
+  }else if(state.mode==='tap'){
     $('runNote').textContent=tapNow().n+': '+tapNow().seq.length+' notes, one per eighth, looping. The click marks the quarters.';
   }else if(state.mode==='triads'){
     $('runNote').textContent=state.root+' '+TRIAD_TYPES[$('triadType').value].n.toLowerCase()+
@@ -2169,8 +2173,7 @@ document.querySelectorAll('[data-drill]').forEach(b=>b.onclick=()=>{
   $('pitchDrill').style.display=d==='pitch'?'':'none';
   $('ivlDrill').style.display=d==='ivl'?'':'none';
   $('earDrill').style.display=d==='ear'?'':'none';
-  $('notesDrill').style.display=d==='notes'?'':'none';
-  if(d==='notes')renderNfBoard();
+
 });
 $('earDrill').style.display='none';
 
@@ -2340,7 +2343,7 @@ const PLAN={
           [5,'The long cycle','Autumn-style changes, eight chords.',
      {mode:'chords',prog:4,bpm:75,min:5}]]}]}};
 
-const WOODSHED_VERSION='1.2 build ae';   /* plain ASCII: this string gets compared against the file on the server */
+const WOODSHED_VERSION='1.2 build af';   /* plain ASCII: this string gets compared against the file on the server */
 const decodeEsc=t=>t.replace(/\\u([0-9a-fA-F]{4})/g,(m,h)=>String.fromCharCode(parseInt(h,16)));
 const prettyVersion=v=>'Woodshed '+v.replace(' build',' \u00b7 build');
 /* Safari and home-screen web apps hold on to the copy they first loaded. So ask the
