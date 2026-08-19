@@ -232,10 +232,11 @@
   </div>
 
   <div class="tabs" role="tablist">
-    <button role="tab" id="tab-plan" aria-selected="true">Plan</button>
+    <button role="tab" id="tab-plan" aria-selected="true">Progress</button>
     <button role="tab" id="tab-scales" aria-selected="false">Scales</button>
     <button role="tab" id="tab-chords" aria-selected="false">Chords</button>
     <button role="tab" id="tab-harm" aria-selected="false">Harmonics</button>
+    <button role="tab" id="tab-tapping" aria-selected="false">Tapping</button>
     <button role="tab" id="tab-practice" aria-selected="false">Practice</button>
     <button role="tab" id="tab-game" aria-selected="false">Ear</button>
   </div>
@@ -297,15 +298,10 @@
         <button class="pill" data-mode="chords" aria-pressed="false">Chord changes</button>
         <button class="pill" data-mode="fret" aria-pressed="false">The Circle</button>
         <button class="pill" data-mode="triads" aria-pressed="false">Triads</button>
-        <button class="pill" data-mode="tap" aria-pressed="false">Tapping</button>
       </div>
       <div id="walkPick" style="margin-top:12px;max-width:340px;display:none">
         <span class="lbl">Progression</span>
         <select id="walkProg"></select>
-      </div>
-      <div id="tapPick" style="margin-top:12px;max-width:440px;display:none">
-        <span class="lbl">Pattern</span>
-        <select id="tapPat"></select>
       </div>
       <div id="triadPick" style="margin-top:12px;display:none">
         <div class="grid2">
@@ -396,16 +392,6 @@
         </div>
       </div>
       <div class="board-wrap"><div id="nfBoard"></div></div>
-    </div>
-
-    <div id="tapPanel" style="display:none">
-      <div class="panel">
-        <div class="chordnow"><div class="big" id="tapName">&mdash;</div></div>
-        <p class="note" id="tapHow" style="margin-top:0"></p>
-        <div class="btnrow"><button id="tapHear">Hear it</button></div>
-        <div class="legend" id="tapKey"></div>
-      </div>
-      <div class="boardbox"><div class="board-wrap"><div id="tapBoard"></div></div></div>
     </div>
 
     <div id="triadPanel" style="display:none">
@@ -653,6 +639,19 @@
       <span class="lbl">Chime exercises</span>
       <div id="harmEx"></div>
       <p class="note" id="harmNote"></p>
+    </div>
+  </section>
+
+  <!-- TAPPING -->
+  <section class="view" id="view-tapping">
+    <div class="panel brief">
+      <h2>Two-hand <span>tapping</span></h2>
+      <p id="tapIntro"></p>
+    </div>
+    <div class="panel">
+      <span class="lbl">Patterns \u2014 tap to see and hear</span>
+      <div id="tapList"></div>
+      <p class="note" id="tapLegend"></p>
     </div>
   </section>
 
@@ -941,9 +940,6 @@ document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
   if(state.mode==='chords'){cBar=0;renderChordMode();}
   $('fretPanel').style.display=state.mode==='fret'?'':'none';
   if(state.mode==='fret')renderNfBoard();
-  $('tapPick').style.display=state.mode==='tap'?'':'none';
-  $('tapPanel').style.display=state.mode==='tap'?'':'none';
-  if(state.mode==='tap'){tapStep=-1;renderTap();}
   $('triadPick').style.display=state.mode==='triads'?'':'none';
   $('triadPanel').style.display=state.mode==='triads'?'':'none';
   if(state.mode==='triads'){tIdx=0;buildTriads();}
@@ -1317,14 +1313,6 @@ function scheduler(){
       if(ciLeft<=0){phase='play';tick=0;}
       continue;
     }
-    if(state.mode==='tap'){
-      const len=tapNow().seq.length,e=tick%len,beat=Math.floor(e/2)%4;
-      if(e===0&&tick>0){cycle++;if(!bumpTempo())return;}
-      if(e%2===0)clickSound(nextTime,e===0);
-      queue.push({t:nextTime,tapStep:e,beat,accent:e===0,bar:Math.floor(e/8)+1});
-      nextTime+=30/bpm;tick++;
-      continue;
-    }
     if(state.mode==='triads'){
       const bpb=beatsPerBarNow(),per=+$('triadBars').value||1;
       const len=Math.max(1,TRIADS.length)*bpb*per;
@@ -1385,13 +1373,6 @@ function paint(){
     $('cd').textContent='';
     $('barOut').textContent=q.bar;
     if(q.walkBar!==undefined&&q.walkBar!==walkBar){walkBar=q.walkBar;renderWalkBoard();}
-    if(q.tapStep!==undefined){
-      tapStep=q.tapStep;renderTap();
-      $('status').textContent='Tapping';$('status').classList.remove('rest');
-      $('dotLabel').textContent='';
-      $('posOut').textContent=(q.tapStep+1)+' of '+tapNow().seq.length;
-      $('noteOut').textContent='beat '+(q.beat+1);
-    }
     if(q.triadIdx!==undefined){
       if(q.triadIdx!==tIdx){tIdx=q.triadIdx;renderTriads();}
       $('status').textContent='Triads';$('status').classList.remove('rest');
@@ -1850,60 +1831,75 @@ function renderWalkBoard(){
 }
 
 /* ================= tapping =================
-   L is a left-hand tap, R a right-hand tap. Sequences are one note per eighth.
-   A step with h:1 is a tapped harmonic \u2014 the note sounds an octave above the fret. */
+   L is a left-hand tap, R a right-hand tap. h:1 marks a tapped harmonic \u2014 the note
+   sounds an octave above the fret. Shapes are movable: the left hand names the root. */
 const TAPS=[
- {n:'Octave taps',d:'Left hand taps the root, right hand the octave two strings up. The oldest tapping idea there is.',
+ {n:'Octave taps',d:'Left hand on the root, right hand on the octave two strings up. Start here \u2014 it is all about equal volume between the hands.',
   seq:[[0,5,'L'],[2,7,'R'],[0,5,'L'],[2,7,'R'],[0,7,'L'],[2,9,'R'],[0,7,'L'],[2,9,'R']]},
- {n:'A major triad',d:'Root under the left hand, 3rd and 5th tapped above it. The shape moves \u2014 same fingering, any root on the E string.',
+ {n:'Major triad',d:'Root under the left hand, 3rd and 5th tapped above. Slide the whole shape to any root on the E string.',
   seq:[[0,5,'L'],[3,6,'R'],[3,9,'R'],[3,6,'R'],[0,5,'L'],[3,6,'R'],[3,9,'R'],[3,6,'R']]},
- {n:'A minor triad',d:'The same shape with the 3rd pulled down a fret. Play it straight after the major and listen to the one note move.',
+ {n:'Minor triad',d:'The same shape with the 3rd pulled down one fret. Play it straight after the major and listen to the single note move.',
   seq:[[0,5,'L'],[3,5,'R'],[3,9,'R'],[3,5,'R'],[0,5,'L'],[3,5,'R'],[3,9,'R'],[3,5,'R']]},
- {n:'Major cycle of fourths',d:'A, D, G, C \u2014 the same triad shape sliding down a fourth each bar.',
+ {n:'Major 7 shape',d:'Root, 3rd, 5th, 7th. The 7th at the top is what makes it sound like a chord rather than an exercise.',
+  seq:[[0,5,'L'],[3,6,'R'],[3,9,'R'],[3,13,'R'],[3,9,'R'],[3,6,'R']]},
+ {n:'Minor 7 shape',d:'Same four voices, minor. Flatten the 3rd and the 7th and the whole colour changes.',
+  seq:[[0,5,'L'],[3,5,'R'],[3,9,'R'],[3,12,'R'],[3,9,'R'],[3,5,'R']]},
+ {n:'Add9 colour',d:'The 9th sits between the root and the 3rd and opens the chord up. Worth knowing before any of the harder shapes.',
+  seq:[[0,5,'L'],[2,9,'R'],[3,6,'R'],[3,9,'R'],[3,6,'R'],[2,9,'R']]},
+ {n:'Sus2 colour',d:'No 3rd at all \u2014 root, 2nd and 5th. Neither major nor minor, which is why it hangs.',
+  seq:[[0,10,'L'],[2,14,'R'],[3,14,'R'],[2,14,'R'],[0,10,'L'],[2,14,'R'],[3,14,'R'],[2,14,'R']]},
+ {n:'String skipping',d:'The right hand crosses between the D and G strings. Awkward at first, and the reason to practise it slowly.',
+  seq:[[0,5,'L'],[2,7,'R'],[3,6,'R'],[3,9,'R'],[2,7,'R'],[3,6,'R']]},
+ {n:'Pedal tone',d:'Left hand holds the root while the right hand walks down: A, G\u266F, F\u266F, E. One hand grounds, the other moves.',
+  seq:[[0,5,'L'],[3,14,'R'],[0,5,'L'],[3,13,'R'],[0,5,'L'],[3,11,'R'],[0,5,'L'],[3,9,'R']]},
+ {n:'Descending cascade',d:'From the top down, right hand first, landing on the low root. Let each note ring into the next.',
+  seq:[[3,12,'R'],[3,9,'R'],[3,6,'R'],[0,5,'L']]},
+ {n:'I \u2013 IV \u2013 V in A',d:'Three chords, same shape, three different roots: A, D, E. This is where tapping starts sounding like music.',
+  seq:[[0,5,'L'],[3,6,'R'],[3,9,'R'],[0,10,'L'],[3,11,'R'],[3,14,'R'],[0,12,'L'],[3,13,'R'],[3,16,'R']]},
+ {n:'Major cycle of fourths',d:'The triad shape sliding down a fourth each bar: A, D, G, C.',
   seq:[[0,5,'L'],[3,6,'R'],[3,9,'R'],[3,6,'R'],[0,10,'L'],[3,11,'R'],[3,14,'R'],[3,11,'R'],
        [0,3,'L'],[3,4,'R'],[3,7,'R'],[3,4,'R'],[0,8,'L'],[3,9,'R'],[3,12,'R'],[3,9,'R']]},
- {n:'Minor cycle of fourths',d:'Same journey, minor shape. Am, Dm, Gm, Cm.',
+ {n:'Minor cycle of fourths',d:'Same journey, minor shape: Am, Dm, Gm, Cm.',
   seq:[[0,5,'L'],[3,5,'R'],[3,9,'R'],[3,5,'R'],[0,10,'L'],[3,10,'R'],[3,14,'R'],[3,10,'R'],
        [0,3,'L'],[3,3,'R'],[3,7,'R'],[3,3,'R'],[0,8,'L'],[3,8,'R'],[3,12,'R'],[3,8,'R']]},
  {n:'Two-hand ostinato',d:'Left hand keeps root and fifth underneath while the right hand taps the upper voice.',
   seq:[[0,5,'L'],[1,7,'L'],[3,9,'R'],[3,6,'R'],[0,5,'L'],[1,7,'L'],[3,6,'R'],[3,9,'R']]},
- {n:'Tapped harmonics',d:'Left hand frets the note, right hand taps twelve frets higher. The octave above rings out as a harmonic.',
+ {n:'Tapped harmonics',d:'Left hand frets the note, right hand taps twelve frets higher. The octave rings out as a harmonic.',
   seq:[[0,3,'L'],[0,15,'R',1],[1,3,'L'],[1,15,'R',1],[2,3,'L'],[2,15,'R',1],[3,3,'L'],[3,15,'R',1]]}];
-const TAP_KEY=[['L','left hand'],['R','right hand'],['\u25b3','tapped harmonic']];
-let tapStep=-1;
-function tapNow(){return TAPS[+$('tapPat').value]||TAPS[0];}
-function renderTap(){
-  const t=tapNow(),top=Math.max(...t.seq.map(x=>x[1]));
-  $('tapName').textContent=t.n;
-  $('tapHow').textContent=t.d;
-  $('tapKey').innerHTML=TAP_KEY.map(k=>'<span class="chip"><b>'+k[0]+'</b> '+k[1]+'</span>').join('');
-  const order=new Map();
-  t.seq.forEach((x,i)=>{const k=x[0]+':'+x[1];order.set(k,(order.get(k)?order.get(k)+',':'')+(i+1));});
-  const cur=t.seq[tapStep];
-  $('tapBoard').innerHTML=neckSvg(Math.min(20,Math.max(15,top+1)),44,(row,f,cx,cy)=>{
-    const str=3-row,lab=order.get(str+':'+f);
+function tapNoteName(x){
+  return SHARPNAMES[(OPENPC[x[0]]+x[1]+(x[3]===1?12:0))%12];
+}
+function renderTapList(){
+  $('tapIntro').textContent='Both hands on the neck: the left taps the low note, the right taps the notes above it. Keep the two hands equal in volume \u2014 that is most of the work. Every shape here is movable, so once one sits under your hands it works from any root.';
+  $('tapLegend').textContent='Orange markers are left hand, teal are right, numbered in playing order. A small triangle marks a tapped harmonic.';
+  $('tapList').innerHTML=TAPS.map((t,i)=>{
+    const names=t.seq.map(tapNoteName).join('  \u00b7  ');
+    return '<details class="ex"><summary><b>'+t.n+'</b><span class="seqline">'+names+'</span></summary>'+
+      '<p>'+t.d+'</p><div class="exboard">'+tapBoard(t)+'</div>'+
+      '<button data-tap="'+i+'">Hear it</button></details>';}).join('');
+  document.querySelectorAll('[data-tap]').forEach(b=>b.onclick=ev=>{ev.preventDefault();playTap(+b.dataset.tap);});
+}
+function tapBoard(t){
+  const order=new Map(),hand=new Map(),harm=new Map();
+  t.seq.forEach((x,i)=>{const k=x[0]+':'+x[1];
+    order.set(k,(order.get(k)?order.get(k)+',':'')+(i+1));
+    hand.set(k,x[2]);if(x[3]===1)harm.set(k,1);});
+  const top=Math.max(...t.seq.map(x=>x[1]));
+  return neckSvg(Math.min(20,Math.max(15,top+1)),44,(row,f,cx,cy)=>{
+    const str=3-row,k=str+':'+f,lab=order.get(k);
     if(!lab)return '';
-    const step=t.seq.find(x=>x[0]===str&&x[1]===f);
-    const isL=step[2]==='L',isCur=cur&&cur[0]===str&&cur[1]===f;
-    const harm=step[3]===1;
-    const fill=isL?'var(--root)':'var(--tone)';
-    return '<circle cx="'+cx+'" cy="'+cy+'" r="'+(isCur?16:14)+'" fill="'+fill+'"'+
-      (isCur?' stroke="#fff" stroke-width="2.5"':' stroke="rgba(0,0,0,.35)"')+'/>'+
-      (harm?'<polygon points="'+cx+','+(cy-19)+' '+(cx-6)+','+(cy-10)+' '+(cx+6)+','+(cy-10)+'" fill="var(--cream)"/>':'')+
+    const isL=hand.get(k)==='L';
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="14" fill="'+(isL?'var(--root)':'var(--tone)')+'" stroke="rgba(0,0,0,.35)"/>'+
+      (harm.get(k)?'<polygon points="'+cx+','+(cy-19)+' '+(cx-6)+','+(cy-10)+' '+(cx+6)+','+(cy-10)+'" fill="var(--cream)"/>':'')+
       '<text x="'+cx+'" y="'+(cy+4)+'" text-anchor="middle" font-family="var(--mono)" font-weight="600" font-size="'+
       (lab.length>1?10:12)+'" fill="'+(isL?'#180c07':'#062018')+'">'+lab+'</text>';
   });
 }
-function playTap(){
-  if(!audioReady()){withAudio(playTap);return;}
-  const t=tapNow(),step=.32;let x=ctx.currentTime+.1;
-  t.seq.forEach(n=>{pluck(OPENMIDI_R[n[0]]+n[1]+(n[3]===1?12:0),x,step*1.7);x+=step;});
+function playTap(i){
+  if(!audioReady()){withAudio(()=>playTap(i));return;}
+  const t=TAPS[i],step=.34;let x=ctx.currentTime+.1;
+  t.seq.forEach(n=>{pluck(OPENMIDI_R[n[0]]+n[1]+(n[3]===1?12:0),x,step*1.8);x+=step;});
 }
-$('tapPat')&&(function(){
-  $('tapPat').innerHTML=TAPS.map((x,i)=>'<option value="'+i+'">'+x.n+'</option>').join('');
-  $('tapPat').onchange=()=>{stop();tapStep=-1;renderTap();refreshMeta();};
-  $('tapHear').onclick=playTap;
-})();
 
 /* ---- triads: three notes, one per string, every inversion up the neck ---- */
 const TRIAD_TYPES={maj:{n:'Major',s:[0,4,7]},min:{n:'Minor',s:[0,3,7]},
@@ -2327,14 +2323,10 @@ const PLAN={
           [4,'A full chorus, no stops','If you fall out, come back in on the next bar rather than stopping.',
      {mode:'walk',prog:0,bpm:80,min:4}]]},
   {t:'Tapping',f:'Both hands on the neck. Even volume between them is the whole job.',
-   steps:[[4,'Octave taps','Left hand root, right hand octave. Nothing else.',
-     {mode:'tap',tapPat:0,bpm:60,min:4}],
-          [4,'Major and minor triads','Same shape, one note moves. Play them back to back.',
-     {mode:'tap',tapPat:1,bpm:60,min:4}],
-          [5,'Cycle of fourths','The triad shape sliding down a fourth each bar.',
-     {mode:'tap',tapPat:3,bpm:55,min:5}],
-          [4,'Tapped harmonics','Fret with the left, tap twelve frets up with the right.',
-     {mode:'tap',tapPat:6,bpm:50,min:4}]]},
+   steps:[[4,'Octave taps','Left hand root, right hand octave. Tapping tab, first pattern.',{tab:'tapping'}],
+          [5,'Triads, major and minor','Same shape, one note moves. Play them back to back.',{tab:'tapping'}],
+          [5,'Seventh shapes','Add the 7th on top and the shape starts sounding like a chord.',{tab:'tapping'}],
+          [4,'Tapped harmonics','Fret with the left, tap twelve frets up with the right.',{tab:'tapping'}]]},
   {t:'Changes in time',f:'Grips arriving on the beat, with no scramble before the change.',
    src:'your chord-changes mode',
    steps:[[5,'Two bars each','ii\u2013V\u2013I, two bars per chord.',
@@ -2343,7 +2335,7 @@ const PLAN={
           [5,'The long cycle','Autumn-style changes, eight chords.',
      {mode:'chords',prog:4,bpm:75,min:5}]]}]}};
 
-const WOODSHED_VERSION='1.2 build ag';   /* plain ASCII: this string gets compared against the file on the server */
+const WOODSHED_VERSION='1.2 build ai';   /* plain ASCII: this string gets compared against the file on the server */
 const decodeEsc=t=>t.replace(/\\u([0-9a-fA-F]{4})/g,(m,h)=>String.fromCharCode(parseInt(h,16)));
 const prettyVersion=v=>'Woodshed '+v.replace(' build',' \u00b7 build');
 /* Safari and home-screen web apps hold on to the copy they first loaded. So ask the
@@ -2477,7 +2469,6 @@ function launchStep(tr,lvIdx,stepIdx){
     if(cfg.mode==='walk'){$('walkProg').value=cfg.prog;walkBar=0;renderWalkBoard();}
     if(cfg.mode==='chords'){$('chordProg').value=cfg.prog;cBar=0;renderChordMode();}}
   if(cfg.beats){$('beatsPerBar').value=cfg.beats;drawBeats();}
-  if(cfg.tapPat!==undefined){$('tapPat').value=cfg.tapPat;tapStep=-1;renderTap();}
   if(cfg.bpm){$('startBpm').value=cfg.bpm;bpm=cfg.bpm;}
   state.ramp=!!cfg.ramp;
   if(cfg.ramp){$('stepBpm').value=cfg.step||10;$('maxBpm').value=cfg.max||(cfg.bpm+40);
@@ -2488,7 +2479,9 @@ function launchStep(tr,lvIdx,stepIdx){
   $('exDesc').textContent=st[2];
   $('exBanner').style.display='';
   $('donePanel').style.display='none';
-  refreshMeta();selectTab('practice');
+  refreshMeta();
+  if(!cfg.mode&&cfg.tab){selectTab(cfg.tab);return;}   /* just take me there, no clock */
+  selectTab('practice');
   setTimeout(start,250);
 }
 $('planSetup').onclick=()=>{
@@ -2511,7 +2504,7 @@ planLoad();
 document.getElementById('sndBtn').onclick=unlockAudio;audioBadge();
 $('chordProg').innerHTML=CHORD_PROGS.map((p,i)=>'<option value="'+i+'">'+p.n+'</option>').join('');
 ['chordProg','chordVoice','chordBars'].forEach(id=>$(id).onchange=()=>{stop();cBar=0;renderChordMode();refreshMeta();});
-renderChordMode();buildTriads();renderTap();
+renderChordMode();buildTriads();renderTapList();
 renderRoots();$('cycleWhere').style.display='none';$('keyNow').textContent=state.root;
 syncToggles();syncRamp();drawBeats();render();renderGrips();buildRun();renderHarm();refreshMeta();
 </script>
