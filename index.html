@@ -2340,7 +2340,9 @@ const PLAN={
           [5,'The long cycle','Autumn-style changes, eight chords.',
      {mode:'chords',prog:4,bpm:75,min:5}]]}]}};
 
-const WOODSHED_VERSION='1.2 \u00b7 build ad';
+const WOODSHED_VERSION='1.2 build ae';   /* plain ASCII: this string gets compared against the file on the server */
+const decodeEsc=t=>t.replace(/\\u([0-9a-fA-F]{4})/g,(m,h)=>String.fromCharCode(parseInt(h,16)));
+const prettyVersion=v=>'Woodshed '+v.replace(' build',' \u00b7 build');
 /* Safari and home-screen web apps hold on to the copy they first loaded. So ask the
    server, past the cache, whether a newer file exists and offer a one-tap reload. */
 let updateSeen=0;
@@ -2351,9 +2353,9 @@ async function checkForUpdate(){
     const r=await fetch(location.pathname+'?fresh='+Date.now(),{cache:'no-store'});
     if(!r.ok)return;
     const m=(await r.text()).match(/WOODSHED_VERSION='([^']+)'/);
-    if(m&&m[1]!==WOODSHED_VERSION){
+    if(m&&decodeEsc(m[1])!==WOODSHED_VERSION){
       const b=document.getElementById('updBtn');
-      b.textContent='Woodshed '+m[1]+' is ready \u2014 tap to load it';
+      b.textContent=prettyVersion(decodeEsc(m[1]))+' is ready \u2014 tap to load it';
       b.style.display='';
       b.onclick=()=>location.replace(location.pathname+'?v='+Date.now());
     }
@@ -2433,7 +2435,7 @@ function renderPlan(){
     store.kind==='browser'?'Saved in this browser on this device. Open the same link in the same browser and your place will be here.'
     :store.kind==='artifact'?'Saved inside this preview. To keep progress on your own device, open the app from a web address instead \u2014 and use the backup box below to carry your data across.'
     :'Progress is not saving in this window \u2014 note your level before you close it.';
-  $('verLine').textContent='Woodshed '+WOODSHED_VERSION+
+  $('verLine').textContent=prettyVersion(WOODSHED_VERSION)+
     ' \u2014 the build letter changes with every workshop tweak; the version number will not move until the tool settles.';
 }
 document.querySelectorAll('[data-track]').forEach(b=>b.onclick=()=>{
